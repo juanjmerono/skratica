@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>俳</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            animation: scan 4s linear infinite;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: .3
+        }
+
+        @keyframes scan {
+            0% { top: -3px }
+            100% { top: 100vh }
+        }
+
+        .haiku {
+            text-align: center;
+            line-height: 2.5;
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px #00ff4155;
+            opacity: 0;
+            animation: fadeIn 3s ease forwards
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1 }
+        }
+
+        .line {
+            display: block
+        }
+
+        .back {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ff4144;
+            text-decoration: none;
+            font-size: .8rem;
+            letter-spacing: 2px;
+            transition: all .3s;
+            opacity: 0;
+            animation: fadeIn 3s ease 2s forwards
+        }
+
+        .back:hover {
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scan-line"></div>
+    <div class="haiku" id="h"></div>
+    <a href="index.html" class="back">[ volver ]</a>
+    <script>
+        const _0x = ['\x65\x6C\x65\x6D\x65\x6E\x74\x4E\x6F\x64\x65', '\x69\x6E\x6E\x65\x72\x48\x54\x4D\x4C', '\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x64', '\x3C\x73\x70\x61\x6E\x20\x63\x6C\x61\x73\x73\x3D\x22\x6C\x69\x6E\x65\x22\x3E', '\x3C\x2F\x73\x70\x61\x6E\x3E']; 
+        const [w, r, t, s, e] = _0x; const h = document[t]('h'); 
+        const a = '\x4C\x6C\x75\x76\x69\x61\x20\x73\x75\x61\x76\x65\x20\x63\x61\x65'; 
+        const b = '\x53\x6F\x62\x72\x65\x20\x70\x65\x64\x72\x61\x20\x76\x69\x65\x6A\x61\x20\x79\x20\x66\x72\xED\x61'; 
+        const c = '\x45\x6C\x20\x72\xED\x6F\x20\x73\x69\x67\x75\x65\x20\x63\x61\x6E\x74\x61\x6E\x64\x6F'; 
+        h[r] = `${s}${a}${e}<br>${s}${b}${e}<br>${s}${c}${e}`;
+    </script>
+</body>
+
+</html>

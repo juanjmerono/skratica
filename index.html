@@ -486,7 +486,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 <div class="terminal-dot dot-red"></div>
                 <div class="terminal-dot dot-yellow"></div>
                 <div class="terminal-dot dot-green"></div>
-                <span class="terminal-title">root@cyberpaellas:~</span>
+                <span class="terminal-title">root@cyberpaellas:~/game-info</span>
             </div>
             <div class="terminal-body" id="interactive-terminal">
                 <div id="terminal-history"></div>
@@ -577,17 +577,40 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 return hashHex === CORRECT_HASH;
             }
 
-            const files = {
-                '.pass.txt': btoa('La contraseña NO es 1234 pero acaba con cuatro números que ya has visto.'),
-                'pass.txt': 'Aquí no está la palabra incluída en la contraseña pero si todas las letras.',
-                'README.md': 'Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.\n'+
-                             'Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.\n'+
-                             'Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.'
-            };
+            const sizeCalc = function() { return this.content.length; }
+            const files = [
+                { name: '.pass.txt', 
+                  content: 'YWRtaW4xMjM0IGVyYSBkZW1hc2lhZG8gb2J2aW8sIGxhIGNhbWJpYW1vcyBwZXJvIG1hbnR1dmltb3MgZWwgZm9ybWF0bw==', 
+                  size: sizeCalc },
+                { name: 'pass.txt', 
+                  content: 'admin1234', 
+                  size: sizeCalc },
+                { name: 'README.md', 
+                  content: 'Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.\n\n'+
+                              'Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.\n\n'+
+                              'Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.', 
+                  size: sizeCalc },
+                { name: 'index.html',
+                  content: document.documentElement.outerHTML, 
+                  size: sizeCalc },
+                { name: 'haiku.html',
+                  content: null,
+                  size: function() { return this.content ? this.content.length : 0; } }
+            ];
+
+            fetch('haiku.html')
+                .then(r => r.text())
+                .then(text => {
+                    const haiku = getFile('haiku.html');
+                    if (haiku) haiku.content = text;
+                });
+
+            const getFile = (name) => files.find(f => f.name === name);
+            const isRealFile = (name) => name == 'README.md';
 
             const commands = {
                 //echo: (args) => args.join(' ').replace(/^["']|["']$/g, ''),
-                help: () => 'Comandos disponibles: help, clear, ls, whoami, date, cat, ssh, base64, reset',
+                help: () => 'Comandos disponibles: help, clear, ls, whoami, date, cat, ssh, base64, open, reset',
                 whoami: () => {
                     sessionStorage.setItem('cyberpaellas_whoami', 'true');
                     revealTeamObjectives();
@@ -595,33 +618,64 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 },
                 //pwd: () => '/root',
                 date: () => new Date().toString(),
-                ls: (args) => { 
-                    if (args[0] == '-a') return '.pass.txt pass.txt README.md';
+                ls: (args) => {
+                    const hora = '13:25';
+                    const ahora = new Date();
+                    const mes = ahora.toLocaleString('en-US', { month: 'short' });
+                    const dia = String(ahora.getDate()).padStart(2, '0');
+                    const year = ahora.getFullYear();
+                    const horas = String(ahora.getHours()).padStart(2, '0');
+                    const minutos = String(ahora.getMinutes()).padStart(2, '0');
+                    const fechaReal = `${mes} ${dia} ${year} ${horas}:${minutos}`;
+                    const fechaFake = `${mes} ${dia} ${year} ${hora}`;
+
+                    const allFiles = files.filter(f => args[0] === '-a' || !f.name.startsWith('.'));
+
+                    if (args[0] === '-a') return files.map(f => f.name).join(' ');
+                    if (args[0] === '-l') return allFiles.map(f => `-rw-r--r-- 1 ${team} staff  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`).join('\n');
+                    if (args[0] === '-la' || args[0] === '-al') return ''+
+                        `drwxr-xr-x 5 ${team} staff  ${String(160).padStart(5)}  ${fechaFake} .\n`+
+                        `drwxr-xr-x 7 ${team} staff  ${String(224).padStart(5)}  ${fechaFake} ..\n`+
+                        files.map(f => `-rw-r--r-- 1 ${team} staff  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`).join('\n');
                     if (args.length>0) return `ls: invalid option -- ${args[0]}`
-                    return 'pass.txt README.md';
+                    return allFiles.map(f => f.name).join(' ');
                 },
                 clear: () => { 
                     terminalHistory.innerHTML = ''; return null; 
                 },
                 cat: (args) => {
-                    if (files[args[0]] !== undefined) return files[args[0]];
+                    const file = getFile(args[0]);
+                    if (file) return file.content;
                     return `cat: ${args[0]}: No such file or directory`;
                 },
                 base64: (args) => {
                     if (args.length < 2) return 'Usage: base64 [-d|-e] <file>';
                     const flag = args[0];
-                    const file = args[1];
-                    if (files[file] === undefined) return `base64: ${file}: No such file or directory`;
+                    const file = getFile(args[1]);
+                    if (!file) return `base64: ${args[1]}: No such file or directory`;
                     if (flag === '-d') {
-                        try { return atob(files[file]); } catch(e) { return `base64: invalid input`; }
+                        try { return atob(file.content); } catch(e) { return `base64: invalid input`; }
                     }
                     if (flag === '-e') {
-                        return btoa(files[file]);
+                        return btoa(file.content);
                     }
                     return `base64: invalid option -- ${flag}`;
                 },
-                reset: () => { setTimeout(function() { sessionStorage.removeItem('cyberpaellas_team'); sessionStorage.removeItem('cyberpaellas_started'); sessionStorage.removeItem('cyberpaellas_whoami'); sessionStorage.removeItem('cyberpaellas_start_time'); location.reload(); }, 1200); return 'Reiniciando...'; },
-                ssh: () => { awaitingPassword = true; inputPrompt.style.display = 'none'; return 'root@atica password: '; }
+                reset: () => { 
+                    setTimeout(function() { 
+                        sessionStorage.removeItem('cyberpaellas_team'); 
+                        sessionStorage.removeItem('cyberpaellas_started'); 
+                        sessionStorage.removeItem('cyberpaellas_whoami'); 
+                        sessionStorage.removeItem('cyberpaellas_start_time'); 
+                        location.reload(); 
+                    }, 1200); 
+                    return 'Reiniciando...'; 
+                },
+                ssh: () => { awaitingPassword = true; inputPrompt.style.display = 'none'; return 'root@atica password: '; },
+                open: (args) => {
+                    if (getFile(args[0])) location.href = args[0];
+                    return `The file ${args[0]} does not exist.`;
+                }
             };
 
             // Auto-type "help" when "INICIAR JUEGO" is clicked
