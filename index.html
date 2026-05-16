@@ -588,6 +588,32 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 document.getElementById('interactive-terminal').addEventListener('click', () => {
                     mobileInput.focus();
                 });
+
+                // Long-press space for autocomplete on mobile
+                let spaceHoldTimer = null;
+                const SPACE_HOLD_MS = 400;
+
+                mobileInput.addEventListener('keydown', (e) => {
+                    if (e.key === ' ' || e.code === 'Space') {
+                        spaceHoldTimer = setTimeout(() => {
+                            e.preventDefault();
+                            handleTabCompletion();
+                            // Remove the trailing space that was added
+                            if (inputBuffer.endsWith(' ')) {
+                                inputBuffer = inputBuffer.slice(0, -1);
+                                mobileInput.value = inputBuffer;
+                            }
+                            spaceHoldTimer = null;
+                        }, SPACE_HOLD_MS);
+                    }
+                });
+
+                mobileInput.addEventListener('keyup', (e) => {
+                    if ((e.key === ' ' || e.code === 'Space') && spaceHoldTimer) {
+                        clearTimeout(spaceHoldTimer);
+                        spaceHoldTimer = null;
+                    }
+                });
             }
 
             // echo -n "admin" | shasum -a 256 | awk '{print $1}'
