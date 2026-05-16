@@ -444,10 +444,6 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            #mobile-input {
-                display: block !important;
-            }
-
             #current-input {
                 display: none;
             }
@@ -502,8 +498,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
             </div>
             <div class="terminal-body" id="interactive-terminal">
                 <div id="terminal-history"></div>
-                <p><span id="input-prompt" class="prompt">root@cyberpaellas:~$</span> <span id="current-input" class="command"></span><span class="typing">&nbsp;</span></p>
-                <input type="text" id="mobile-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="display:none;width:100%;background:#0d0d15;border:1px solid #00ff4144;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:1rem;padding:10px 12px;margin-top:12px;border-radius:4px;outline:none;">
+                <p><span id="input-prompt" class="prompt">root@cyberpaellas:~$</span> <span id="current-input" class="command"></span><span class="typing">&nbsp;</span><input type="text" id="mobile-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="display:none;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:inherit;width:60%;outline:none;padding:0;margin:0;caret-color:#00ff41;"></p>
             </div>
         </div>
 
@@ -582,7 +577,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
             if (isMobile) {
-                mobileInput.style.display = 'block';
+                mobileInput.style.display = 'inline';
                 currentInput.style.display = 'none';
                 document.querySelector('.typing').style.display = 'none';
 
