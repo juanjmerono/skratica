@@ -125,6 +125,7 @@
             align-items: center;
             gap: 8px;
             border-bottom: 1px solid #00ff4122;
+            position: relative;
         }
 
         .terminal-dot {
@@ -141,6 +142,11 @@
             margin-left: 10px;
             color: #00ff4188;
             font-size: 0.85rem;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
         }
 
         .terminal-body {
@@ -495,6 +501,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 <div class="terminal-dot dot-yellow"></div>
                 <div class="terminal-dot dot-green"></div>
                 <span class="terminal-title">root@cyberpaellas:~/game-info</span>
+                <button id="tab-btn" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid #00ff41;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:12px;padding:2px 8px;cursor:pointer;border-radius:3px;" title="Autocompletar">TAB</button>
             </div>
             <div class="terminal-body" id="interactive-terminal">
                 <div id="terminal-history"></div>
@@ -580,6 +587,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 mobileInput.style.display = 'inline';
                 currentInput.style.display = 'none';
                 document.querySelector('.typing').style.display = 'none';
+                document.getElementById('tab-btn').style.display = 'block';
 
                 mobileInput.addEventListener('input', () => {
                     inputBuffer = mobileInput.value;
@@ -589,30 +597,9 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                     mobileInput.focus();
                 });
 
-                // Long-press space for autocomplete on mobile
-                let spaceHoldTimer = null;
-                const SPACE_HOLD_MS = 400;
-
-                mobileInput.addEventListener('keydown', (e) => {
-                    if (e.key === ' ' || e.code === 'Space') {
-                        spaceHoldTimer = setTimeout(() => {
-                            e.preventDefault();
-                            handleTabCompletion();
-                            // Remove the trailing space that was added
-                            if (inputBuffer.endsWith(' ')) {
-                                inputBuffer = inputBuffer.slice(0, -1);
-                                mobileInput.value = inputBuffer;
-                            }
-                            spaceHoldTimer = null;
-                        }, SPACE_HOLD_MS);
-                    }
-                });
-
-                mobileInput.addEventListener('keyup', (e) => {
-                    if ((e.key === ' ' || e.code === 'Space') && spaceHoldTimer) {
-                        clearTimeout(spaceHoldTimer);
-                        spaceHoldTimer = null;
-                    }
+                document.getElementById('tab-btn').addEventListener('click', () => {
+                    handleTabCompletion();
+                    mobileInput.focus();
                 });
             }
 
@@ -689,7 +676,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                     const fechaReal = `${mes} ${dia} ${year} ${horas}:${minutos}`;
                     const fechaFake = `${mes} ${dia} ${year} ${hora}`;
 
-                    const formatFile = (f) => `${f.perms} ${f.links} ${team} staff  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`;
+                    const formatFile = (f) => `${f.perms} ${f.links} root ${team}  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`;
                     
                     const globToRegex = (pattern) => {
                         const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
