@@ -663,16 +663,70 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                     const fechaReal = `${mes} ${dia} ${year} ${horas}:${minutos}`;
                     const fechaFake = `${mes} ${dia} ${year} ${hora}`;
 
-                    const allFiles = files.filter(f => args[0] === '-a' || !f.name.startsWith('.')).sort((a, b) => a.name.localeCompare(b.name));
-
-                    if (args[0] === '-a') 
-                        return files.sort((a, b) => a.name.localeCompare(b.name)).map(f => f.name).join(' ');
-                    if (args[0] === '-l') 
-                        return allFiles.map(f => `${f.perms} ${f.links} ${team} staff  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`).join('\n');
-                    if (args[0] === '-la' || args[0] === '-al') 
-                        return files.sort((a, b) => a.name.localeCompare(b.name)).map(f => `${f.perms} ${f.links} ${team} staff  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`).join('\n');
-                    if (args.length>0) return `ls: invalid option -- ${args[0]}`
-                    return allFiles.map(f => f.name).join(' ');
+                    const formatFile = (f) => `${f.perms} ${f.links} ${team} staff  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`;
+                    
+                    const globToRegex = (pattern) => {
+                        const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = escaped.replace(/\*/g, '.*').replace(/\?/g, '.');
+                        return new RegExp(`^${regex}$`);
+                    };
+                    
+                    const knownOptions = ['-a', '-l', '-la', '-al'];
+                    const options = [];
+                    const fileArgs = [];
+                    
+                    for (const arg of args) {
+                        if (arg.startsWith('-') && !arg.includes('*') && !arg.includes('?')) {
+                            options.push(arg);
+                        } else {
+                            fileArgs.push(arg);
+                        }
+                    }
+                    
+                    const hasA = options.some(o => o === '-a' || o === '-la' || o === '-al');
+                    const hasL = options.some(o => o === '-l' || o === '-la' || o === '-al');
+                    const unknownOptions = options.filter(o => !knownOptions.includes(o));
+                    
+                    if (unknownOptions.length > 0) {
+                        return `ls: invalid option -- ${unknownOptions[0].replace('-', '')}`;
+                    }
+                    
+                    const pool = hasA ? files : files.filter(f => !f.name.startsWith('.'));
+                    
+                    if (fileArgs.length > 0) {
+                        const results = [];
+                        for (const arg of fileArgs) {
+                            if (arg.includes('*') || arg.includes('?')) {
+                                const regex = globToRegex(arg);
+                                const matches = pool.filter(f => regex.test(f.name));
+                                if (matches.length === 0) {
+                                    results.push(`ls: cannot access '${arg}': No such file or directory`);
+                                } else if (hasL) {
+                                    results.push(matches.sort((a, b) => a.name.localeCompare(b.name)).map(f => formatFile(f)).join('\n'));
+                                } else {
+                                    results.push(matches.sort((a, b) => a.name.localeCompare(b.name)).map(f => f.name).join(' '));
+                                }
+                            } else {
+                                const file = getFile(arg);
+                                if (!file) {
+                                    results.push(`ls: cannot access '${arg}': No such file or directory`);
+                                } else if (hasL) {
+                                    results.push(formatFile(file));
+                                } else {
+                                    results.push(file.name);
+                                }
+                            }
+                        }
+                        return results.join('\n');
+                    }
+                    
+                    const sortedFiles = pool.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                    if (hasL) {
+                        return sortedFiles.map(f => formatFile(f)).join('\n');
+                    }
+                    
+                    return sortedFiles.map(f => f.name).join(' ');
                 },
                 clear: () => { 
                     terminalHistory.innerHTML = ''; return null; 
