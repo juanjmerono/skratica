@@ -1,0 +1,2 @@
+# skratica
+Simple HTML project
