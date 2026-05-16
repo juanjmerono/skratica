@@ -498,7 +498,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
             </div>
             <div class="terminal-body" id="interactive-terminal">
                 <div id="terminal-history"></div>
-                <p><span id="input-prompt" class="prompt">root@cyberpaellas:~$</span> <span id="current-input" class="command"></span><span class="typing">&nbsp;</span><input type="text" id="mobile-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="display:none;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:inherit;width:60%;outline:none;padding:0;margin:0;caret-color:#00ff41;"></p>
+                <p style="display:flex;flex-wrap:nowrap;align-items:baseline;white-space:nowrap;"><span id="input-prompt" class="prompt">root@cyberpaellas:~$</span>&nbsp;<span id="current-input" class="command"></span><span class="typing">&nbsp;</span><input type="text" id="mobile-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="display:none;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:inherit;flex:1;min-width:0;outline:none;padding:0;margin:0;caret-color:#00ff41;"></p>
             </div>
         </div>
 
@@ -591,6 +591,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                         processEnter();
                         mobileInput.value = '';
                         inputBuffer = '';
+                        setTimeout(() => mobileInput.focus(), 50);
                     }
                 });
 
@@ -600,7 +601,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
             }
 
             // echo -n "admin" | shasum -a 256 | awk '{print $1}'
-            const CORRECT_HASH = 'a00a787802198519fbaa4ea47b82b1abaaded2841b497151787e32a8bd27072a';
+            const CORRECT_HASH = '21dd875f3b8cd83ce9b86c4ffa0c49097b4c58988091888897e608fb6c6d6953';
 
             async function verifyPassword(input) {
                 const encoder = new TextEncoder();
