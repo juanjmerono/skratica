@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBERDEFENSE - Juego de Ciberseguridad</title>
+    <title>CYBERPAELLAS - Juego de Ciberseguridad - ATICA</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
 
@@ -450,21 +450,9 @@
     <div class="scan-line"></div>
 
     <header>
-        <div class="logo">CYBER<span>DEFENSE</span></div>
-        <div class="subtitle">[ PROTEGE LA RED. ELIMINA AMENAZAS. SOBREVIVE. ]</div>
+        <div class="logo">CYBERPAELLAS<span id="logo-span"></span></div>
+        <div id="subtitle" class="subtitle">[ COMPROMETE O REFUERZA LA SEGURIDAD DE ATICA ]</div>
     </header>
-
-    <div class="ascii-art">
-   ░███    ░██████████░██████  ░██████     ░███    
-  ░██░██       ░██      ░██   ░██   ░██   ░██░██   
- ░██  ░██      ░██      ░██  ░██         ░██  ░██  
-░█████████     ░██      ░██  ░██        ░█████████ 
-░██    ░██     ░██      ░██  ░██        ░██    ░██ 
-░██    ░██     ░██      ░██   ░██   ░██ ░██    ░██ 
-░██    ░██     ░██    ░██████  ░██████  ░██    ░██ 
-                                                   
-                                                                                                   
-    </div>
 
     <div class="terminal">
         <div class="terminal-window">
@@ -472,47 +460,236 @@
                 <div class="terminal-dot dot-red"></div>
                 <div class="terminal-dot dot-yellow"></div>
                 <div class="terminal-dot dot-green"></div>
-                <span class="terminal-title">root@cyberdefense:~/game-info</span>
+                <span id="terminal-title" class="terminal-title">root@cyberpaellas:~/game-info</span>
             </div>
             <div class="terminal-body">
-                <p><span class="prompt">root@cyberdefense:~$</span> <span class="command">cat README.md</span></p>
-                <p class="output">
-                    <span class="highlight">CYBERDEFENSE</span> es un juego de estrategia y ciberseguridad donde asumes el rol de un analista de seguridad encargado de proteger una infraestructura critica contra ataques constantes.<br><br>
-                    Tu mision: detectar, analizar y neutralizar amenazas antes de que comprometan el sistema. Cada segundo cuenta. Cada decision importa.<span class="typing">&nbsp;</span>
+                <p><span id="terminal-prompt" class="prompt">root@cyberpaellas:~$</span> <span class="command"><span id="terminal-command">cat README.md</span></span></p>
+                <p id="terminal-output" class="output">
+                    Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.<br/>
+                    Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.<br/>
+                    Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb se cierra al acabar las paellas.
                 </p>
             </div>
         </div>
 
-        <h2 class="section-title">OBJETIVO DEL JUEGO</h2>
+        <h2 id="section-objective" class="section-title">OBJETIVO DEL JUEGO</h2>
         <div class="terminal-window">
             <div class="terminal-body">
-                <p class="output">
-                    <span class="prompt">></span> Defiende tu red contra <span class="warning">oleadas de ciberataques</span> cada vez mas sofisticados.<br>
-                    <span class="prompt">></span> Construye y mejora <span class="highlight">sistemas de defensa</span>: firewalls, IDS/IPS, honeypots, SIEM.<br>
-                    <span class="prompt">></span> Gestiona tus <span class="highlight">recursos limitados</span> (presupuesto, energia, personal).<br>
-                    <span class="prompt">></span> Sobrevive el mayor numero de <span class="warning">rondas de ataque</span> posible.<br>
-                    <span class="prompt">></span> Alcanza el <span class="highlight">ranking global</span> de mejores defensores.
+                <p id="objectives-output" class="output">
+                    <span class="prompt">&gt;</span> Averigua a qué equipo perteneces <span class="warning">EVIL</span> o <span class="highlight">SOC</span> y comienza la misión.<br>
+                    <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>
                 </p>
             </div>
-        </div>
-
-        <h2 class="section-title">COMENZAR MISION</h2>
-        <div style="text-align: center; margin: 30px 0;">
-            <a href="#" class="btn">INICIAR JUEGO</a>
         </div>
 
         <div class="terminal-window" style="margin-top: 40px;">
-            <div class="terminal-body">
-                <p><span class="prompt">root@cyberdefense:~$</span> <span class="command">echo "Buena suerte, defensor."</span></p>
-                <p class="output highlight">Buena suerte, defensor.</p>
-                <p><span class="prompt">root@cyberdefense:~$</span> <span class="typing">&nbsp;</span></p>
+            <div class="terminal-header">
+                <div class="terminal-dot dot-red"></div>
+                <div class="terminal-dot dot-yellow"></div>
+                <div class="terminal-dot dot-green"></div>
+                <span class="terminal-title">root@cyberpaellas:~</span>
+            </div>
+            <div class="terminal-body" id="interactive-terminal">
+                <div id="terminal-history"></div>
+                <p><span id="input-prompt" class="prompt">root@cyberpaellas:~$</span> <span id="current-input" class="command"></span><span class="typing">&nbsp;</span></p>
             </div>
         </div>
+
+        <h2 id="section-start" class="section-title">COMENZAR MISION</h2>
+        <div id="start-container" style="text-align: center; margin: 30px 0;">
+            <a href="#" class="btn">INICIAR JUEGO</a>
+        </div>
+
+        <div id="result-section" style="display: none;">
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot dot-red"></div>
+                    <div class="terminal-dot dot-yellow"></div>
+                    <div class="terminal-dot dot-green"></div>
+                    <span class="terminal-title">root@cyberpaellas:~</span>
+                </div>
+                <div class="terminal-body" style="text-align: center; padding: 40px 24px;">
+                    <h2 id="result-title" style="font-family: 'Orbitron', sans-serif; font-size: 2rem; margin-bottom: 20px;"></h2>
+                    <p id="result-message" class="output" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
+                    <p id="result-time" class="output highlight" style="font-size: 1.5rem;"></p>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <footer>
-        <p>[ CYBERDEFENSE v1.0.0 ] &mdash; Sistema de Juego de Ciberseguridad</p>
-        <p style="margin-top: 8px;">"En la red, la paranoia es una virtud"</p>
+        <p id="footer-text">[ CYBERPAELLAS v1.0.0 ] — Juego de Ciberseguridad - ATICA</p>
+        <p id="footer-message" style="margin-top: 8px;">"En la red, la paranoia es una virtud"</p>
     </footer>
+
+    <script>
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const team = params.get('team') == '666' ? 'evil' : 'soc';
+
+            // Interactive terminal
+            const terminalHistory = document.getElementById('terminal-history');
+            const currentInput = document.getElementById('current-input');
+            const inputPrompt = document.getElementById('input-prompt');
+            let inputBuffer = '';
+            let awaitingPassword = false;
+            let gameStarted = false;
+            let gameEnded = false;
+            let firstCommandTime = null;
+
+            const commands = {
+                //echo: (args) => args.join(' ').replace(/^["']|["']$/g, ''),
+                help: () => 'Comandos disponibles: help, clear, ls, whoami, date, cat, ssh',
+                whoami: () => team,
+                //pwd: () => '/root',
+                date: () => new Date().toString(),
+                ls: () => 'pistas.txt',
+                clear: () => { terminalHistory.innerHTML = ''; return null; },
+                cat: (args) => 'hola',
+                ssh: () => { awaitingPassword = true; inputPrompt.style.display = 'none'; return 'root@cyberpaellas password: '; }
+            };
+
+            // Auto-type "help" when "INICIAR JUEGO" is clicked
+            document.querySelector('.btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Hide "COMENZAR MISION" section
+                const sectionStart = document.getElementById('section-start');
+                const startContainer = document.getElementById('start-container');
+                sectionStart.style.display = 'none';
+                startContainer.style.display = 'none';
+                
+                gameStarted = true;
+                firstCommandTime = Date.now();
+                
+                const hint = 'help';
+                let i = 0;
+                const typeInterval = setInterval(() => {
+                    if (i < hint.length) {
+                        inputBuffer += hint[i];
+                        currentInput.textContent = inputBuffer;
+                        i++;
+                    } else {
+                        clearInterval(typeInterval);
+                        // Simulate Enter
+                        const parts = inputBuffer.trim().split(/\s+/);
+                        const cmd = parts[0].toLowerCase();
+                        const args = parts.slice(1);
+
+                        const cmdLine = document.createElement('p');
+                        cmdLine.innerHTML = `<span class="prompt">root@cyberpaellas:~$</span> <span class="command">${inputBuffer}</span>`;
+                        terminalHistory.appendChild(cmdLine);
+
+                        if (cmd && commands[cmd]) {
+                            const output = commands[cmd](args);
+                            if (output !== null && output !== undefined) {
+                                const outputLine = document.createElement('p');
+                                outputLine.className = 'output';
+                                outputLine.textContent = output;
+                                terminalHistory.appendChild(outputLine);
+                            }
+                        }
+
+                        inputBuffer = '';
+                        currentInput.textContent = '';
+                    }
+                }, 150);
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (gameEnded) return;
+
+                if (e.key === 'Enter') {
+                    if (!firstCommandTime) {
+                        firstCommandTime = Date.now();
+                    }
+
+                    if (awaitingPassword) {
+                        const password = inputBuffer;
+                        const cmdLine = document.createElement('p');
+                        cmdLine.innerHTML = `<span class="prompt">root@cyberpaellas password:</span> <span class="command">********</span>`;
+                        terminalHistory.appendChild(cmdLine);
+
+                        if (password === 'admin') {
+                            const outputLine = document.createElement('p');
+                            outputLine.className = team === 'evil' ? 'output warning' : 'output highlight';
+                            outputLine.textContent = team === 'evil' ? 'Has vulnerado el sistema' : 'Has activado el doble factor';
+                            terminalHistory.appendChild(outputLine);
+
+                            // End game
+                            gameEnded = true;
+                            const elapsed = Math.floor((Date.now() - firstCommandTime) / 1000);
+                            const minutes = Math.floor(elapsed / 60);
+                            const seconds = elapsed % 60;
+                            const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+
+                            const resultSection = document.getElementById('result-section');
+                            const resultTitle = document.getElementById('result-title');
+                            const resultMessage = document.getElementById('result-message');
+                            const resultTime = document.getElementById('result-time');
+
+                            resultTitle.textContent = team === 'evil' ? 'EVIL WINS' : 'SOC WINS';
+                            resultTitle.style.color = team === 'evil' ? '#ff0040' : '#00ffff';
+                            resultMessage.textContent = team === 'evil' ? 'El sistema ha sido vulnerado. La contraseña maestra ha sido comprometida.' : 'El doble factor de autenticación ha sido activado. El sistema está seguro.';
+                            resultTime.textContent = `Tiempo: ${timeStr}`;
+
+                            resultSection.style.display = 'block';
+
+                            // Disable console
+                            awaitingPassword = false;
+                            inputPrompt.style.display = 'inline';
+                            inputBuffer = '';
+                            currentInput.textContent = '';
+                            return;
+                        } else {
+                            const errorLine = document.createElement('p');
+                            errorLine.className = 'output warning';
+                            errorLine.textContent = 'Access denied';
+                            terminalHistory.appendChild(errorLine);
+                        }
+
+                        awaitingPassword = false;
+                        inputPrompt.style.display = 'inline';
+                        inputBuffer = '';
+                        currentInput.textContent = '';
+                        return;
+                    }
+
+                    const parts = inputBuffer.trim().split(/\s+/);
+                    const cmd = parts[0].toLowerCase();
+                    const args = parts.slice(1);
+
+                    const cmdLine = document.createElement('p');
+                    cmdLine.innerHTML = `<span class="prompt">root@cyberpaellas:~$</span> <span class="command">${inputBuffer}</span>`;
+                    terminalHistory.appendChild(cmdLine);
+
+                    if (cmd && commands[cmd]) {
+                        const output = commands[cmd](args);
+                        if (output !== null && output !== undefined) {
+                            const outputLine = document.createElement('p');
+                            outputLine.className = 'output';
+                            outputLine.textContent = output;
+                            terminalHistory.appendChild(outputLine);
+                        }
+                    } else if (cmd) {
+                        const errorLine = document.createElement('p');
+                        errorLine.className = 'output warning';
+                        errorLine.textContent = `bash: ${cmd}: command not found`;
+                        terminalHistory.appendChild(errorLine);
+                    }
+
+                    inputBuffer = '';
+                    currentInput.textContent = '';
+                } else if (e.key === 'Backspace') {
+                    inputBuffer = inputBuffer.slice(0, -1);
+                    currentInput.textContent = inputBuffer;
+                } else if (e.key.length === 1) {
+                    inputBuffer += e.key;
+                    currentInput.textContent = inputBuffer;
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
