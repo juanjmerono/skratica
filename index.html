@@ -159,6 +159,7 @@
             color: #00ff4199;
             margin: 10px 0;
             line-height: 1.8;
+            white-space: pre-wrap;
         }
 
         .highlight {
@@ -464,21 +465,19 @@
             </div>
             <div class="terminal-body">
                 <p><span id="terminal-prompt" class="prompt">root@cyberpaellas:~$</span> <span class="command"><span id="terminal-command">cat README.md</span></span></p>
-                <p id="terminal-output" class="output">
-                    Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.<br/><br/>
-                    Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.<br/><br/>
-                    Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.
-                </p>
+                <p id="terminal-output" class="output">Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.
+
+Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.
+
+Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.</p>
             </div>
         </div>
 
         <h2 id="section-objective" class="section-title">OBJETIVO DEL JUEGO</h2>
         <div class="terminal-window">
             <div class="terminal-body">
-                <p id="objectives-output" class="output">
-                    <span class="prompt">&gt;</span> Inicia el juego para descubrir a qué equipo perteneces <span class="warning">EVIL</span> o <span class="highlight">SOC</span>.<br>
-                    <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>
-                </p>
+                <p id="objectives-output" class="output"><span class="prompt">&gt;</span> Inicia el juego para descubrir a qué equipo perteneces <span class="warning">EVIL</span> o <span class="highlight">SOC</span>.
+<span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.</p>
             </div>
         </div>
 
@@ -540,12 +539,12 @@
                 const objectivesOutput = document.getElementById('objectives-output');
                 if (team === 'evil') {
                     objectivesOutput.innerHTML = 
-                    `<span class="prompt">&gt;</span> <span class="warning"><b>BIENVENIDO</b> a EVIL, descubre la contraseña y vulnera el sistema con el comando SSH</span>.<br/>
-                     <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
+                    `<span class="prompt">&gt;</span> <span class="warning"><b>BIENVENIDO</b> a EVIL, descubre la contraseña y vulnera el sistema con el comando SSH</span>.
+<span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
                 } else {
                     objectivesOutput.innerHTML = 
-                    `<span class="prompt">&gt;</span> <span class="highlight"><b>BIENVENIDO</b> al SOC, descubre la contraseña y activa el doble factor con el comando SSH</span>.<br/>
-                     <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
+                    `<span class="prompt">&gt;</span> <span class="highlight"><b>BIENVENIDO</b> al SOC, descubre la contraseña y activa el doble factor con el comando SSH</span>.
+<span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
                 }
             }
 
@@ -580,7 +579,10 @@
 
             const files = {
                 '.pass.txt': btoa('La contraseña NO es 1234 pero acaba con cuatro números que ya has visto.'),
-                'pass.txt': 'Aquí no está la palabra incluída en la contraseña pero si todas las letras.'
+                'pass.txt': 'Aquí no está la palabra incluída en la contraseña pero si todas las letras.',
+                'README.md': 'Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.\n'+
+                             'Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.\n'+
+                             'Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.'
             };
 
             const commands = {
@@ -594,9 +596,9 @@
                 //pwd: () => '/root',
                 date: () => new Date().toString(),
                 ls: (args) => { 
-                    if (args[0] == '-a') return '.pass.txt pass.txt';
+                    if (args[0] == '-a') return '.pass.txt pass.txt README.md';
                     if (args.length>0) return `ls: invalid option -- ${args[0]}`
-                    return 'pass.txt';
+                    return 'pass.txt README.md';
                 },
                 clear: () => { 
                     terminalHistory.innerHTML = ''; return null; 
