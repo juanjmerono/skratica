@@ -850,6 +850,38 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 currentInput.textContent = '';
             }
 
+            function getVisibleFiles(withDot) {
+                return files.filter(f => withDot || !f.name.startsWith('.')).sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            function handleTabCompletion() {
+                const parts = inputBuffer.trim().split(/\s+/);
+                const lastPart = parts[parts.length - 1] || '';
+
+                if (lastPart === '') {
+                    // No text - complete with first non-dot file
+                    const visibleFiles = getVisibleFiles(false);
+                    if (visibleFiles.length > 0) {
+                        inputBuffer += visibleFiles[0].name.substring(lastPart.length);
+                        mobileInput.value = inputBuffer;
+                        currentInput.textContent = inputBuffer;
+                    }
+                    return;
+                }
+                
+                // Find files matching the current prefix
+                const visibleFiles = getVisibleFiles(lastPart.startsWith('.'));
+                const matches = visibleFiles.filter(f => f.name.startsWith(lastPart));
+
+                if (matches.length > 0) {
+                    // Exactly one match - complete it
+                    inputBuffer += matches[0].name.substring(lastPart.length);
+                    mobileInput.value = inputBuffer;
+                    currentInput.textContent = inputBuffer;
+                }
+                // If multiple matches or no matches, do nothing
+            }
+
             document.addEventListener('keydown', async (e) => {
                 if (gameEnded) return;
 
@@ -857,6 +889,9 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                     e.preventDefault();
                     await processEnter();
                     mobileInput.value = '';
+                } else if (e.key === 'Tab') {
+                    e.preventDefault();
+                    handleTabCompletion();
                 } else if (e.key === 'Backspace') {
                     inputBuffer = inputBuffer.slice(0, -1);
                     currentInput.textContent = inputBuffer;
