@@ -450,8 +450,8 @@
     <div class="scan-line"></div>
 
     <header>
-        <div class="logo">CYBERPAELLAS<span id="logo-span"></span></div>
-        <div id="subtitle" class="subtitle">[ COMPROMETE O REFUERZA LA SEGURIDAD DE ATICA ]</div>
+        <div class="logo">CYBER<span id="logo-span">PAELLAS</span></div>
+        <div id="subtitle" class="subtitle">[ <span class="warning">COMPROMETE</span> O <span class="highlight">REFUERZA</span> LA SEGURIDAD DE ATICA ]</div>
     </header>
 
     <div class="terminal">
@@ -465,9 +465,9 @@
             <div class="terminal-body">
                 <p><span id="terminal-prompt" class="prompt">root@cyberpaellas:~$</span> <span class="command"><span id="terminal-command">cat README.md</span></span></p>
                 <p id="terminal-output" class="output">
-                    Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.<br/>
-                    Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.<br/>
-                    Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb se cierra al acabar las paellas.
+                    Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.<br/><br/>
+                    Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.<br/><br/>
+                    Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.
                 </p>
             </div>
         </div>
@@ -525,15 +525,46 @@
                 sessionStorage.setItem('cyberpaellas_team', team);
             }
 
+            const gameAlreadyStarted = sessionStorage.getItem('cyberpaellas_started') === 'true';
+            const whoamiAlreadyDone = sessionStorage.getItem('cyberpaellas_whoami') === 'true';
+            const savedFirstCommandTime = sessionStorage.getItem('cyberpaellas_start_time');
+
+            function hideStartSection() {
+                const sectionStart = document.getElementById('section-start');
+                const startContainer = document.getElementById('start-container');
+                if (sectionStart) sectionStart.style.display = 'none';
+                if (startContainer) startContainer.style.display = 'none';
+            }
+
+            function revealTeamObjectives() {
+                const objectivesOutput = document.getElementById('objectives-output');
+                if (team === 'evil') {
+                    objectivesOutput.innerHTML = 
+                    `<span class="prompt">&gt;</span> <span class="warning"><b>BIENVENIDO</b> a EVIL, descubre la contraseña y vulnera el sistema con el comando SSH</span>.<br/>
+                     <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
+                } else {
+                    objectivesOutput.innerHTML = 
+                    `<span class="prompt">&gt;</span> <span class="highlight"><b>BIENVENIDO</b> al SOC, descubre la contraseña y activa el doble factor con el comando SSH</span>.<br/>
+                     <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
+                }
+            }
+
+            if (gameAlreadyStarted) {
+                hideStartSection();
+            }
+            if (whoamiAlreadyDone) {
+                revealTeamObjectives();
+            }
+
             // Interactive terminal
             const terminalHistory = document.getElementById('terminal-history');
             const currentInput = document.getElementById('current-input');
             const inputPrompt = document.getElementById('input-prompt');
             let inputBuffer = '';
             let awaitingPassword = false;
-            let gameStarted = false;
+            let gameStarted = gameAlreadyStarted;
             let gameEnded = false;
-            let firstCommandTime = null;
+            let firstCommandTime = savedFirstCommandTime ? parseInt(savedFirstCommandTime) : null;
 
             // echo -n "admin" | shasum -a 256 | awk '{print $1}'
             const CORRECT_HASH = 'e0ec3ff917a9df77e4153d9f18688be3d79b7fea62eb5ba7aad15d6db10e529e';
@@ -547,46 +578,59 @@
                 return hashHex === CORRECT_HASH;
             }
 
+            const files = {
+                '.pass.txt': btoa('La contraseña NO es 1234 pero acaba con cuatro números que ya has visto.'),
+                'pass.txt': 'Aquí no está la palabra incluída en la contraseña pero si todas las letras.'
+            };
+
             const commands = {
                 //echo: (args) => args.join(' ').replace(/^["']|["']$/g, ''),
-                help: () => 'Comandos disponibles: help, clear, ls, whoami, date, cat, ssh, reset',
+                help: () => 'Comandos disponibles: help, clear, ls, whoami, date, cat, ssh, base64, reset',
                 whoami: () => {
-                    const objectivesOutput = document.getElementById('objectives-output');
-                    if (team === 'evil') {
-                        objectivesOutput.innerHTML = 
-                        `<span class="prompt">&gt;</span> Bienvenido a <span class="warning">EVIL</span>, descubre la contraseña y vulnera el sistema mediante <span class="warning">ssh</span>.<br/>
-                         <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
-                    } else {
-                        objectivesOutput.innerHTML = 
-                        `<span class="prompt">&gt;</span> Bienvenido al <span class="highlight">SOC</span>, descubre la contraseña y ctiva el doble factor mediante <span class="highlight">ssh</span>.<br/>
-                         <span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
-                    }
+                    sessionStorage.setItem('cyberpaellas_whoami', 'true');
+                    revealTeamObjectives();
                     return team;
                 },
                 //pwd: () => '/root',
                 date: () => new Date().toString(),
                 ls: (args) => { 
                     if (args[0] == '-a') return '.pass.txt pass.txt';
-                    if (args) return `ls: invalid option -- ${args[0]}`
+                    if (args.length>0) return `ls: invalid option -- ${args[0]}`
                     return 'pass.txt';
                 },
                 clear: () => { 
                     terminalHistory.innerHTML = ''; return null; 
                 },
                 cat: (args) => {
-                    if (args[0] === '.pass.txt') return 'TGEgY29udHJhc2XDsWEgZXMgdW5hIHBhbGFicmEgeSB1biBuw7ptZXJvIHNlcGFyYWRvcyBwb3IgdW4gY2Fyw6FjdGVyIGVzcGVjaWFsLg==';
-                    if (args[0] === 'pass.txt') return 'La contraseña no está aquí';
+                    if (files[args[0]] !== undefined) return files[args[0]];
                     return `cat: ${args[0]}: No such file or directory`;
                 },
-                reset: () => { setTimeout(function() { sessionStorage.removeItem('cyberpaellas_team'); location.reload(); }, 1200); return 'Reiniciando...'; },
-                ssh: () => { awaitingPassword = true; inputPrompt.style.display = 'none'; return 'root@cyberpaellas password: '; }
+                base64: (args) => {
+                    if (args.length < 2) return 'Usage: base64 [-d|-e] <file>';
+                    const flag = args[0];
+                    const file = args[1];
+                    if (files[file] === undefined) return `base64: ${file}: No such file or directory`;
+                    if (flag === '-d') {
+                        try { return atob(files[file]); } catch(e) { return `base64: invalid input`; }
+                    }
+                    if (flag === '-e') {
+                        return btoa(files[file]);
+                    }
+                    return `base64: invalid option -- ${flag}`;
+                },
+                reset: () => { setTimeout(function() { sessionStorage.removeItem('cyberpaellas_team'); sessionStorage.removeItem('cyberpaellas_started'); sessionStorage.removeItem('cyberpaellas_whoami'); sessionStorage.removeItem('cyberpaellas_start_time'); location.reload(); }, 1200); return 'Reiniciando...'; },
+                ssh: () => { awaitingPassword = true; inputPrompt.style.display = 'none'; return 'root@atica password: '; }
             };
 
             // Auto-type "help" when "INICIAR JUEGO" is clicked
             document.querySelector('.btn').addEventListener('click', async (e) => {
                 e.preventDefault();
                 
+                if (gameStarted) return;
+                
                 gameStarted = true;
+                sessionStorage.setItem('cyberpaellas_started', 'true');
+                hideStartSection();
                 
                 const hint = 'help';
                 let i = 0;
@@ -600,10 +644,7 @@
                         
                         if (!firstCommandTime) {
                             firstCommandTime = Date.now();
-                            const sectionStart = document.getElementById('section-start');
-                            const startContainer = document.getElementById('start-container');
-                            if (sectionStart) sectionStart.style.display = 'none';
-                            if (startContainer) startContainer.style.display = 'none';
+                            sessionStorage.setItem('cyberpaellas_start_time', firstCommandTime.toString());
                         }
                         
                         // Simulate Enter
@@ -637,16 +678,18 @@
                 if (e.key === 'Enter') {
                     if (!firstCommandTime) {
                         firstCommandTime = Date.now();
-                        const sectionStart = document.getElementById('section-start');
-                        const startContainer = document.getElementById('start-container');
-                        if (sectionStart) sectionStart.style.display = 'none';
-                        if (startContainer) startContainer.style.display = 'none';
+                        sessionStorage.setItem('cyberpaellas_start_time', firstCommandTime.toString());
+                        if (!gameStarted) {
+                            gameStarted = true;
+                            sessionStorage.setItem('cyberpaellas_started', 'true');
+                            hideStartSection();
+                        }
                     }
 
                     if (awaitingPassword) {
                         const password = inputBuffer;
                         const cmdLine = document.createElement('p');
-                        cmdLine.innerHTML = `<span class="prompt">root@cyberpaellas password:</span> <span class="command">********</span>`;
+                        cmdLine.innerHTML = `<span class="prompt">root@atica password:</span> <span class="command">********</span>`;
                         terminalHistory.appendChild(cmdLine);
 
                         const isValid = await verifyPassword(password);
