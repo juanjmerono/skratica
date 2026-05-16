@@ -107,25 +107,23 @@
 <body>
     <div class="scan-line"></div>
     <div class="cards">
-        <div class="card">
-            <span class="number">I</span>
-            <span class="line">Un punto clave</span>
-            <span class="line">Esconde dentro de sí</span>
-            <span class="line">El gran tesoro</span>
-        </div>
-        <div class="card">
-            <span class="number">II</span>
-            <span class="line">Un versículo</span>
-            <span class="line">Señala la palabra</span>
-            <span class="line">Desconocida</span>
-        </div>
-        <div class="card">
-            <span class="number">III</span>
-            <span class="line">Del más reciente</span>
-            <span class="line">Su tamaño señala</span>
-            <span class="line">A los vetados</span>
-        </div>
+        <div class="card" id="c1"><span class="number">I</span></div>
+        <div class="card" id="c2"><span class="number">II</span></div>
+        <div class="card" id="c3"><span class="number">III</span></div>
     </div>
     <a href="index.html" class="back">[ volver ]</a>
+    <script>
+        const poems = [
+            ['\x55\x6e\x20\x70\x75\x6e\x74\x6f\x20\x63\x6c\x61\x76\x65', '\x45\x73\x63\x6f\x6e\x64\x65\x20\x64\x65\x6e\x74\x72\x6f\x20\x64\x65\x20\x73\xed', '\x45\x6c\x20\x67\x72\x61\x6e\x20\x74\x65\x73\x6f\x72\x6f'],
+            ['\x55\x6e\x20\x76\x65\x72\x73\xed\x63\x75\x6c\x6f', '\x53\x65\xf1\x61\x6c\x61\x20\x6c\x61\x20\x70\x61\x6c\x61\x62\x72\x61', '\x44\x65\x73\x63\x6f\x6e\x6f\x63\x69\x64\x61'],
+            ['\x44\x65\x6c\x20\x6d\xe1\x73\x20\x72\x65\x63\x69\x65\x6e\x74\x65', '\x53\x75\x20\x74\x61\x6d\x61\xf1\x6f\x20\x73\x65\xf1\x61\x6c\x61', '\x41\x20\x6c\x6f\x73\x20\x76\x65\x74\x61\x64\x6f\x73']
+        ];
+        function decode(arr) {
+            return arr.map(l => `<span class="line">${l}</span>`).join('');
+        }
+        document.getElementById('c1').innerHTML += decode(poems[0]);
+        document.getElementById('c2').innerHTML += decode(poems[1]);
+        document.getElementById('c3').innerHTML += decode(poems[2]);
+    </script>
 </body>
 </html>
