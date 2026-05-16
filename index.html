@@ -585,16 +585,6 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                     inputBuffer = mobileInput.value;
                 });
 
-                mobileInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        processEnter();
-                        mobileInput.value = '';
-                        inputBuffer = '';
-                        setTimeout(() => mobileInput.focus(), 50);
-                    }
-                });
-
                 document.getElementById('interactive-terminal').addEventListener('click', () => {
                     mobileInput.focus();
                 });
@@ -866,6 +856,7 @@ Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     await processEnter();
+                    mobileInput.value = '';
                 } else if (e.key === 'Backspace') {
                     inputBuffer = inputBuffer.slice(0, -1);
                     currentInput.textContent = inputBuffer;
