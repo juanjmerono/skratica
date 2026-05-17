@@ -21,7 +21,7 @@
             align-items: center;
             justify-content: center;
             padding: 40px 20px;
-            overflow: hidden
+            overflow-y: auto
         }
 
         .scan-line {
@@ -47,7 +47,8 @@
             gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
-            max-width: 900px
+            max-width: 900px;
+            margin-bottom: 40px
         }
 
         .card {
@@ -86,20 +87,20 @@
         }
 
         .back {
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #00ff4144;
+            color: #00ff41;
             text-decoration: none;
-            font-size: .8rem;
+            font-size: 1rem;
             letter-spacing: 2px;
-            transition: all .3s
+            border: 1px solid #00ff4166;
+            padding: 12px 32px;
+            transition: all .3s;
+            background: #0a0a0fcc
         }
 
         .back:hover {
-            color: #00ff41;
-            text-shadow: 0 0 10px #00ff41
+            background: #00ff4122;
+            text-shadow: 0 0 10px #00ff41;
+            border-color: #00ff41
         }
     </style>
 </head>
