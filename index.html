@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Skratica</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="words-es.js"></script>
   <style>
     *, *::before, *::after {
@@ -673,6 +674,131 @@
       color: var(--text-muted);
       line-height: 1.6;
     }
+
+    /* ══════════════════════════════
+       BOTÓN ESCANEAR
+    ══════════════════════════════ */
+    .btn-scan {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      border-radius: 12px;
+      padding: 10px 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.1s;
+    }
+
+    .btn-scan:hover  { background: var(--accent); color: #fff; }
+    .btn-scan:active { transform: translateY(1px); }
+
+    /* ══════════════════════════════
+       PANEL ESCÁNER (pantalla completa)
+    ══════════════════════════════ */
+    #scan-panel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: #000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #scan-panel.active { display: flex; }
+
+    #scan-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #scan-canvas { display: none; }
+
+    #scan-overlay {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      pointer-events: none;
+    }
+
+    #scan-frame {
+      width: min(72vmin, 280px);
+      height: min(72vmin, 280px);
+      position: relative;
+      border-radius: 16px;
+    }
+
+    /* Esquinas de guía */
+    #scan-frame::before,
+    #scan-frame::after,
+    #scan-frame > span::before,
+    #scan-frame > span::after {
+      content: '';
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-color: var(--accent);
+      border-style: solid;
+    }
+
+    #scan-frame::before  { top: 0;    left: 0;  border-width: 3px 0 0 3px; border-radius: 10px 0 0 0; }
+    #scan-frame::after   { top: 0;    right: 0; border-width: 3px 3px 0 0; border-radius: 0 10px 0 0; }
+
+    #scan-frame > .scan-corner-bl { position: absolute; bottom: 0; left: 0;  width: 100%; height: 100%; pointer-events: none; }
+    #scan-frame > .scan-corner-bl::before { content: ''; position: absolute; bottom: 0; left: 0;  width: 28px; height: 28px; border: 3px solid var(--accent); border-width: 0 0 3px 3px; border-radius: 0 0 0 10px; }
+    #scan-frame > .scan-corner-bl::after  { content: ''; position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; border: 3px solid var(--accent); border-width: 0 3px 3px 0; border-radius: 0 0 10px 0; }
+
+    /* Oscurecer fuera del frame */
+    #scan-overlay::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: -1;
+    }
+
+    #scan-hint {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    }
+
+    #btn-scan-cancel {
+      position: fixed;
+      bottom: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.35);
+      border-radius: 50px;
+      padding: 12px 40px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #btn-scan-cancel:hover  { background: rgba(0,0,0,0.8); }
+    #btn-scan-cancel:active { transform: translateX(-50%) translateY(1px); }
   </style>
 </head>
 <body>
@@ -723,6 +849,17 @@
         </svg>
         Escanea la ficha compartida de un compañero para formar una palabra
       </span>
+      <div class="hints-divider"></div>
+      <button class="btn-scan" id="btn-scan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0">
+          <rect x="3" y="3" width="5" height="5" rx="1"/>
+          <rect x="16" y="3" width="5" height="5" rx="1"/>
+          <rect x="3" y="16" width="5" height="5" rx="1"/>
+          <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
+          <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
+        </svg>
+        Escanear ficha
+      </button>
     </div>
     <div class="team-block">
       <span class="team-heading">Equipo</span>
@@ -748,6 +885,16 @@
       <button class="btn-reorder" id="btn-reorder">Reordenar letras</button>
       <button class="btn-validate" id="btn-validate">Validar palabra</button>
     </div>
+    <button class="btn-scan" id="btn-scan-word">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0">
+        <rect x="3" y="3" width="5" height="5" rx="1"/>
+        <rect x="16" y="3" width="5" height="5" rx="1"/>
+        <rect x="3" y="16" width="5" height="5" rx="1"/>
+        <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
+        <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
+      </svg>
+      Escanear ficha
+    </button>
   </div>
 
   <!-- ── Vista done (palabra validada) ── -->
@@ -786,6 +933,17 @@
     <div class="error-icon" id="error-close" title="Volver">✕</div>
     <div class="error-title" id="error-title">Ficha no válida</div>
     <div class="error-msg"   id="error-msg"></div>
+  </div>
+
+  <!-- ── Panel escáner QR (pantalla completa) ── -->
+  <div id="scan-panel">
+    <video id="scan-video" autoplay playsinline muted></video>
+    <canvas id="scan-canvas"></canvas>
+    <div id="scan-overlay">
+      <div id="scan-frame"><span class="scan-corner-bl"></span></div>
+      <p id="scan-hint">Apunta al código QR</p>
+    </div>
+    <button id="btn-scan-cancel">Cancelar</button>
   </div>
 
   <script>
@@ -1663,6 +1821,116 @@
     }
 
     // ─────────────────────────────────────────────
+    // ESCÁNER QR
+    // ─────────────────────────────────────────────
+    let _scanStream    = null;
+    let _scanRafId     = null;
+    let _scanDetector  = null;
+    let _scanCallback  = null;
+
+    function _isScannerActive() { return !!_scanStream; }
+
+    async function startScanner(onResult) {
+      _scanCallback = onResult;
+
+      // Mostrar panel
+      document.getElementById('scan-panel').classList.add('active');
+
+      // Solicitar cámara trasera
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+      } catch (err) {
+        document.getElementById('scan-panel').classList.remove('active');
+        throw err; // caller maneja el error
+      }
+
+      _scanStream = stream;
+      const video = document.getElementById('scan-video');
+      video.srcObject = stream;
+      await video.play();
+
+      // Elegir método de detección
+      if (typeof BarcodeDetector !== 'undefined') {
+        try {
+          const formats = await BarcodeDetector.getSupportedFormats();
+          if (formats.includes('qr_code')) {
+            _scanDetector = new BarcodeDetector({ formats: ['qr_code'] });
+          }
+        } catch (_) { /* fallback a jsQR */ }
+      }
+
+      _scanLoop();
+    }
+
+    function _scanLoop() {
+      const video  = document.getElementById('scan-video');
+      const canvas = document.getElementById('scan-canvas');
+
+      async function tick() {
+        if (!_scanStream) return; // parado
+
+        if (video.readyState < video.HAVE_ENOUGH_DATA) {
+          _scanRafId = requestAnimationFrame(tick);
+          return;
+        }
+
+        if (_scanDetector) {
+          // BarcodeDetector nativo
+          try {
+            const codes = await _scanDetector.detect(video);
+            if (codes.length > 0) {
+              const raw = codes[0].rawValue;
+              if (_handleScanResult(raw)) return;
+            }
+          } catch (_) { /* ignorar frames fallidos */ }
+          _scanRafId = requestAnimationFrame(tick);
+        } else if (typeof jsQR !== 'undefined') {
+          // jsQR fallback — pintar frame en canvas
+          canvas.width  = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+          if (code && _handleScanResult(code.data)) return;
+          _scanRafId = requestAnimationFrame(tick);
+        } else {
+          // Sin soporte — parar
+          stopScanner();
+        }
+      }
+
+      _scanRafId = requestAnimationFrame(tick);
+    }
+
+    // Devuelve true si el resultado es una URL skratica válida y dispara el callback
+    function _handleScanResult(raw) {
+      let url;
+      try { url = new URL(raw); } catch { return false; }
+
+      const tile  = url.searchParams.get('tile');
+      const reset = url.searchParams.get('reset');
+
+      if (!tile && !reset) return false;
+
+      // Es una URL válida — parar escáner y notificar
+      stopScanner();
+      if (_scanCallback) _scanCallback({ tile, reset });
+      return true;
+    }
+
+    function stopScanner() {
+      if (_scanRafId)    { cancelAnimationFrame(_scanRafId); _scanRafId = null; }
+      if (_scanStream)   { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+      _scanCallback = null;
+      document.getElementById('scan-panel').classList.remove('active');
+    }
+
+    // ─────────────────────────────────────────────
     // INIT
     // ─────────────────────────────────────────────
     (async function init() {
@@ -1774,6 +2042,94 @@
         showDoneView(teamConf, letters);
         initSurplusShare(myTeamKey, teamConf, letters);
       });
+
+      // ── Botón cancelar escáner ────────────────────────────────────
+      document.getElementById('btn-scan-cancel').addEventListener('click', () => stopScanner());
+
+      // ── Función común para procesar resultado escaneado (tile o reset) ──
+      async function handleScannedPayload({ tile, reset }) {
+        if (reset) {
+          let resetValid = false;
+          try {
+            const resetParts = atob(reset).split(',');
+            if (resetParts.length === 2 && resetParts[0] === 'reset') {
+              const resetTs  = parseInt(resetParts[1], 10);
+              const resetAge = Date.now() - resetTs;
+              if (!isNaN(resetTs) && resetAge >= 0 && resetAge <= 40000) resetValid = true;
+            }
+          } catch { /* payload inválido */ }
+
+          if (resetValid) {
+            ['skratica_letter','skratica_team','skratica_mode','skratica_word',
+             'skratica_word_bonus','skratica_word_order','skratica_word_used',
+             'skratica_word_used_bonuses','skratica_word_final',
+             'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
+             'skratica_created_at'].forEach(k => localStorage.removeItem(k));
+            location.reload();
+          } else {
+            const currentMode = getMode();
+            showError(
+              'Código de reset inválido',
+              'El código de reset ha caducado o no es válido.',
+              () => {
+                if (currentMode === 'word') showWordView(teamConf, getWordLetters());
+                else document.getElementById('view-normal').style.display = '';
+              }
+            );
+          }
+          return;
+        }
+
+        if (tile) {
+          const currentMode = getMode();
+          const result = await processTileParam(tile, myTeamKey, currentMode);
+
+          if (!result.ok) {
+            showError(result.title, result.msg, () => {
+              if (currentMode === 'word') showWordView(teamConf, getWordLetters());
+              else document.getElementById('view-normal').style.display = '';
+            });
+            return;
+          }
+
+          const letters = getWordLetters();
+          const bonuses = getWordBonuses();
+
+          if (currentMode === 'normal' && letters.length === 0) {
+            letters.push(myEntry.letter);
+            bonuses.push('1');
+          }
+
+          letters.push(result.letter);
+          bonuses.push(result.bonus);
+          setWordLetters(letters);
+          setWordBonuses(bonuses);
+          setMode('word');
+          localStorage.removeItem('skratica_word_order');
+          localStorage.removeItem('skratica_share_url');
+
+          showWordView(teamConf, letters);
+        }
+      }
+
+      // ── Botones escanear (normal y word) ─────────────────────────
+      async function launchScanner() {
+        try {
+          await startScanner(handleScannedPayload);
+        } catch (err) {
+          showError(
+            'Sin acceso a la cámara',
+            'No se ha podido acceder a la cámara. Comprueba los permisos del navegador.',
+            () => {
+              if (getMode() === 'word') showWordView(teamConf, getWordLetters());
+              else document.getElementById('view-normal').style.display = '';
+            }
+          );
+        }
+      }
+
+      document.getElementById('btn-scan').addEventListener('click', launchScanner);
+      document.getElementById('btn-scan-word').addEventListener('click', launchScanner);
 
       // ¿Llega parámetro ?reset=?
       const params = new URLSearchParams(window.location.search);
