@@ -155,7 +155,7 @@
       font-family: 'Segoe UI', sans-serif;
       font-size: clamp(20px, 7vmin, 34px);
       font-weight: 900;
-      color: #3a3020;
+      color: var(--team-color);
       line-height: 1;
     }
 
@@ -703,7 +703,7 @@
         tileBg:     '#fdf0f0',
         tileBorder: '#e8c4c4',
         glow:       'rgba(224, 82, 82, 0.55)',
-        qrColor:    '#c02020',
+        qrColor:    '#000000',
       },
       B: {
         label:      'Azul',
@@ -711,7 +711,23 @@
         tileBg:     '#f0f3fd',
         tileBorder: '#c4cce8',
         glow:       'rgba(82, 120, 224, 0.55)',
-        qrColor:    '#2040b0',
+        qrColor:    '#000000',
+      },
+      C: {
+        label:      'Verde',
+        color:      '#52c052',
+        tileBg:     '#f0fdf0',
+        tileBorder: '#c4e8c4',
+        glow:       'rgba(82, 192, 82, 0.55)',
+        qrColor:    '#000000',
+      },
+      D: {
+        label:      'Amarillo',
+        color:      '#c8b820',
+        tileBg:     '#fdfbf0',
+        tileBorder: '#e8e0a0',
+        glow:       'rgba(200, 184, 32, 0.55)',
+        qrColor:    '#000000',
       },
     };
 
@@ -758,7 +774,8 @@
     function getOrAssignTeam() {
       const saved = localStorage.getItem('skratica_team');
       if (saved && TEAMS[saved]) return saved;
-      const team = Math.random() < 0.5 ? 'A' : 'B';
+      const keys = Object.keys(TEAMS);
+      const team = keys[Math.floor(Math.random() * keys.length)];
       localStorage.setItem('skratica_team', team);
       return team;
     }

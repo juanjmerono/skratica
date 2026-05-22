@@ -22,6 +22,10 @@
       --red-glow: rgba(224, 82, 82, 0.45);
       --blue-color: #5278e0;
       --blue-glow: rgba(82, 120, 224, 0.45);
+      --green-color: #52c052;
+      --green-glow: rgba(82, 192, 82, 0.45);
+      --yellow-color: #c8b820;
+      --yellow-glow: rgba(200, 184, 32, 0.45);
     }
 
     body {
@@ -203,6 +207,18 @@
       box-shadow: 0 4px 16px var(--blue-glow);
     }
 
+    .btn-action.team-c {
+      background: var(--green-color);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--green-glow);
+    }
+
+    .btn-action.team-d {
+      background: var(--yellow-color);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--yellow-glow);
+    }
+
     .actions-divider {
       width: 100%;
       height: 1px;
@@ -251,6 +267,14 @@
       box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--blue-glow);
     }
 
+    .qr-box.type-c {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--green-glow);
+    }
+
+    .qr-box.type-d {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--yellow-glow);
+    }
+
     #qr-code canvas, #qr-code img {
       width: 240px !important;
       height: 240px !important;
@@ -281,6 +305,8 @@
 
     .qr-tile-hint.team-a { border-color: #e8c4c4; background: #fdf0f0; }
     .qr-tile-hint.team-b { border-color: #c4cce8; background: #f0f3fd; }
+    .qr-tile-hint.team-c { border-color: #c4e8c4; background: #f0fdf0; }
+    .qr-tile-hint.team-d { border-color: #e8e0a0; background: #fdfbf0; }
 
     .qh-letter {
       font-family: 'Segoe UI', sans-serif;
@@ -307,9 +333,11 @@
       text-align: center;
     }
 
-    #qr-countdown.urgent-reset { color: var(--danger); }
-    #qr-countdown.urgent-a     { color: var(--red-color); }
-    #qr-countdown.urgent-b     { color: var(--blue-color); }
+    #qr-countdown.urgent-reset  { color: var(--danger); }
+    #qr-countdown.urgent-a      { color: var(--red-color); }
+    #qr-countdown.urgent-b      { color: var(--blue-color); }
+    #qr-countdown.urgent-c      { color: var(--green-color); }
+    #qr-countdown.urgent-d      { color: var(--yellow-color); }
 
     .qr-note {
       font-size: 0.78rem;
@@ -374,6 +402,12 @@
     </button>
     <button class="btn-action team-b" id="btn-tile-b">
       Letra aleatoria — Equipo Azul
+    </button>
+    <button class="btn-action team-c" id="btn-tile-c">
+      Letra aleatoria — Equipo Verde
+    </button>
+    <button class="btn-action team-d" id="btn-tile-d">
+      Letra aleatoria — Equipo Amarillo
     </button>
 
     <div class="actions-divider"></div>
@@ -443,8 +477,10 @@
     ];
 
     const TEAMS = {
-      A: { label: 'Rojo', qrColor: '#c02020' },
-      B: { label: 'Azul', qrColor: '#2040b0' },
+      A: { label: 'Rojo',     color: '#e05252', qrColor: '#000000', cssVar: '--red-color',    glowVar: '--red-glow',    boxClass: 'type-a', teamClass: 'team-a', urgentClass: 'urgent-a' },
+      B: { label: 'Azul',     color: '#5278e0', qrColor: '#000000', cssVar: '--blue-color',   glowVar: '--blue-glow',   boxClass: 'type-b', teamClass: 'team-b', urgentClass: 'urgent-b' },
+      C: { label: 'Verde',    color: '#52c052', qrColor: '#000000', cssVar: '--green-color',  glowVar: '--green-glow',  boxClass: 'type-c', teamClass: 'team-c', urgentClass: 'urgent-c' },
+      D: { label: 'Amarillo', color: '#c8b820', qrColor: '#000000', cssVar: '--yellow-color', glowVar: '--yellow-glow', boxClass: 'type-d', teamClass: 'team-d', urgentClass: 'urgent-d' },
     };
 
     const totalWeight = LETTERS.reduce((sum, l) => sum + l.weight, 0);
@@ -476,7 +512,7 @@
     function startCountdown(expiresAt, urgentClass, onExpired) {
       const el = document.getElementById('qr-countdown');
       if (_countdownInterval) clearInterval(_countdownInterval);
-      el.classList.remove('urgent-reset', 'urgent-a', 'urgent-b');
+      el.classList.remove('urgent-reset', 'urgent-a', 'urgent-b', 'urgent-c', 'urgent-d');
 
       function tick() {
         const remaining = Math.max(0, expiresAt - Date.now());
@@ -503,7 +539,7 @@
     // ─────────────────────────────────────────────
     // MOSTRAR PANEL QR
     // ─────────────────────────────────────────────
-    function showQR({ url, colorDark, boxClass, label, note, urgentClass, badgeEntry, teamClass }) {
+    function showQR({ url, colorDark, boxClass, label, note, urgentClass, badgeEntry, teamClass, letterColor }) {
       const timestamp = Date.now();
       const expiresAt = timestamp + 30000;
 
@@ -531,8 +567,9 @@
       const hint = document.getElementById('qr-tile-hint');
       if (badgeEntry) {
         hint.className = `qr-tile-hint visible ${teamClass}`;
-        document.getElementById('qh-letter').textContent = badgeEntry.letter;
-        document.getElementById('qh-score').textContent  = badgeEntry.score;
+        document.getElementById('qh-letter').textContent  = badgeEntry.letter;
+        document.getElementById('qh-letter').style.color  = letterColor || '#3a3020';
+        document.getElementById('qh-score').textContent   = badgeEntry.score;
       } else {
         hint.className = 'qr-tile-hint';
       }
@@ -550,7 +587,7 @@
     function backToActions() {
       if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
       document.getElementById('view-qr').classList.remove('active');
-      document.getElementById('qr-countdown').classList.remove('urgent-reset', 'urgent-a', 'urgent-b');
+      document.getElementById('qr-countdown').classList.remove('urgent-reset', 'urgent-a', 'urgent-b', 'urgent-c', 'urgent-d');
       document.getElementById('view-actions').classList.add('active');
     }
 
@@ -564,7 +601,7 @@
 
       showQR({
         url,
-        colorDark:   '#b02020',
+        colorDark:   '#000000',
         boxClass:    'type-reset',
         label:       'Escanea para resetear la partida',
         note:        'Este código es válido <strong style="color:var(--danger)">30 segundos</strong>.<br>Al escanearlo se borrará el progreso del jugador.',
@@ -575,22 +612,22 @@
     }
 
     function generateTileQR(teamKey) {
-      const entry     = weightedRandom();
+      const entry    = weightedRandom();
       const timestamp = Date.now();
-      const encoded   = btoa(`${entry.letter},${teamKey},${timestamp}`);
-      const url       = `${SHARE_BASE_URL}?tile=${encoded}`;
-      const teamConf  = TEAMS[teamKey];
-      const isA       = teamKey === 'A';
+      const encoded  = btoa(`${entry.letter},${teamKey},${timestamp}`);
+      const url      = `${SHARE_BASE_URL}?tile=${encoded}`;
+      const teamConf = TEAMS[teamKey];
 
       showQR({
         url,
         colorDark:   teamConf.qrColor,
-        boxClass:    isA ? 'type-a' : 'type-b',
+        boxClass:    teamConf.boxClass,
         label:       `Ficha para el equipo ${teamConf.label}`,
-        note:        `Este código es válido <strong style="color:${isA ? 'var(--red-color)' : 'var(--blue-color)'}">30 segundos</strong>.<br>Solo puede escanearlo un miembro del equipo ${teamConf.label}.`,
-        urgentClass: isA ? 'urgent-a' : 'urgent-b',
+        note:        `Este código es válido <strong style="color:var(${teamConf.cssVar})">30 segundos</strong>.<br>Solo puede escanearlo un miembro del equipo ${teamConf.label}.`,
+        urgentClass: teamConf.urgentClass,
         badgeEntry:  entry,
-        teamClass:   isA ? 'team-a' : 'team-b',
+        teamClass:   teamConf.teamClass,
+        letterColor: teamConf.color,
       });
     }
 
@@ -637,6 +674,8 @@
     document.getElementById('btn-reset').addEventListener('click',  generateResetQR);
     document.getElementById('btn-tile-a').addEventListener('click', () => generateTileQR('A'));
     document.getElementById('btn-tile-b').addEventListener('click', () => generateTileQR('B'));
+    document.getElementById('btn-tile-c').addEventListener('click', () => generateTileQR('C'));
+    document.getElementById('btn-tile-d').addEventListener('click', () => generateTileQR('D'));
     document.getElementById('btn-back').addEventListener('click',   backToActions);
   </script>
 </body>
