@@ -1097,7 +1097,7 @@
          'skratica_word_bonus','skratica_word_order','skratica_word_used',
          'skratica_word_used_bonuses','skratica_word_final',
          'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
-         'skratica_created_at'].forEach(k => localStorage.removeItem(k));
+         'skratica_used_tiles','skratica_created_at'].forEach(k => localStorage.removeItem(k));
         location.reload();
         return; // nunca llega aquí
       }
@@ -1492,11 +1492,11 @@
       }
 
       const parts = payload.split(',');
-      if (parts.length !== 3) {
+      if (parts.length !== 4) {
         return { ok: false, title: 'Ficha no válida', msg: 'El formato de la ficha es incorrecto.' };
       }
 
-      const [inLetter, inTeam, inTsStr] = parts;
+      const [inLetter, inTeam, inTsStr, inTileId] = parts;
       const inTs = parseInt(inTsStr, 10);
 
       if (!inLetter || !inTeam || isNaN(inTs)) {
@@ -1548,9 +1548,19 @@
         return { ok: false, title: 'Letra desconocida', msg: `La letra "${inLetter}" no es válida.` };
       }
 
+      // Comprobar que este tileId no ha sido canjeado ya en este dispositivo
+      const usedTiles = JSON.parse(localStorage.getItem('skratica_used_tiles') || '[]');
+      if (usedTiles.includes(inTileId)) {
+        return { ok: false, title: 'Ficha ya canjeada', msg: 'Esta ficha ya ha sido escaneada y no puede canjearse de nuevo.' };
+      }
+
       // Asignar bonus (30% de probabilidad, magnitud según velocidad de escaneo)
       const ageMs = now - inTs;
       const bonus = Math.random() < 0.30 ? pickBonus(ageMs) : '1';
+
+      // Registrar tileId como usado
+      usedTiles.push(inTileId);
+      localStorage.setItem('skratica_used_tiles', JSON.stringify(usedTiles));
 
       return { ok: true, letter: inLetter, bonus };
     }
@@ -1685,7 +1695,8 @@
 
         showConfirm(async () => {
           const timestamp = await getNetworkTime();
-          const payload   = `${entry.letter},${teamKey},${timestamp}`;
+          const tileId    = Math.random().toString(36).slice(2, 10);
+          const payload   = `${entry.letter},${teamKey},${timestamp},${tileId}`;
           const encoded   = btoa(payload);
           const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
 
@@ -1796,7 +1807,8 @@
 
         showConfirm(async () => {
           const timestamp = await getNetworkTime();
-          const encoded   = btoa(`${letter},${teamKey},${timestamp}`);
+          const tileId    = Math.random().toString(36).slice(2, 10);
+          const encoded   = btoa(`${letter},${teamKey},${timestamp},${tileId}`);
           const url       = `${SHARE_BASE_URL}/?tile=${encoded}`;
           localStorage.setItem('skratica_surplus_url', url);
 
@@ -2065,7 +2077,7 @@
              'skratica_word_bonus','skratica_word_order','skratica_word_used',
              'skratica_word_used_bonuses','skratica_word_final',
              'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
-             'skratica_created_at'].forEach(k => localStorage.removeItem(k));
+             'skratica_used_tiles','skratica_created_at'].forEach(k => localStorage.removeItem(k));
             location.reload();
           } else {
             const currentMode = getMode();
@@ -2160,7 +2172,7 @@
             'skratica_word_bonus','skratica_word_order','skratica_word_used',
             'skratica_word_used_bonuses','skratica_word_final',
             'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
-            'skratica_created_at'].forEach(k => localStorage.removeItem(k));
+            'skratica_used_tiles','skratica_created_at'].forEach(k => localStorage.removeItem(k));
           location.reload();
           return;
         } else {

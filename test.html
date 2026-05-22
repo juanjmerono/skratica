@@ -631,7 +631,8 @@
     async function generateTileQR(teamKey) {
       const entry     = weightedRandom();
       const timestamp = await getNetworkTime();
-      const encoded   = btoa(`${entry.letter},${teamKey},${timestamp}`);
+      const tileId    = Math.random().toString(36).slice(2, 10);
+      const encoded   = btoa(`${entry.letter},${teamKey},${timestamp},${tileId}`);
       const url      = `${SHARE_BASE_URL}?tile=${encoded}`;
       const teamConf = TEAMS[teamKey];
 
