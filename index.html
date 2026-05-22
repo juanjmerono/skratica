@@ -49,6 +49,24 @@
       color: var(--accent);
     }
 
+    #session-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    #session-next {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0.55;
+      margin-top: 2px;
+    }
+
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -659,7 +677,11 @@
 </head>
 <body>
 
-  <header><h1>Skratica</h1></header>
+  <header>
+    <h1>Skratica</h1>
+    <p id="session-label"></p>
+    <p id="session-next"></p>
+  </header>
 
   <!-- ── Vista normal (ficha propia) ── -->
   <div id="view-normal">
@@ -770,7 +792,8 @@
     // ─────────────────────────────────────────────
     // URL BASE PARA COMPARTIR — edita esta variable
     // ─────────────────────────────────────────────
-    const SHARE_BASE_URL = 'https://juanjmerono.github.io/skratica/';
+    const SHARE_BASE_URL  = 'https://juanjmerono.github.io/skratica/';
+    const SESSION_TTL_MS  = 12 * 60 * 60 * 1000; // 12 horas
 
     // ─────────────────────────────────────────────
     // CONFIGURACIÓN DE LETRAS
@@ -885,6 +908,45 @@
     // ─────────────────────────────────────────────
     // PERSISTENCIA
     // ─────────────────────────────────────────────
+
+    // Devuelve el label de sesión basado en la hora UTC del created_at
+    function getSessionLabel(created) {
+      const startHour = new Date(created).getUTCHours();
+      const hoursLeft = Math.max(1, Math.ceil((created + SESSION_TTL_MS - Date.now()) / 3600000));
+      return {
+        current: `Game${String(startHour).padStart(2, '0')}`,
+        next:    `next game in ${hoursLeft}h`,
+      };
+    }
+
+    // Comprueba si la sesión ha expirado (TTL 12h).
+    // Devuelve el created_at vigente (ya sea existente o recién creado).
+    // Si expira, borra todo el storage y recarga — en ese caso no retorna.
+    async function checkAndResetIfExpired() {
+      const now = await getNetworkTime();
+      const raw = localStorage.getItem('skratica_created_at');
+      const created = parseInt(raw, 10);
+
+      if (isNaN(created)) {
+        // Primera visita: registrar timestamp de red
+        localStorage.setItem('skratica_created_at', now.toString());
+        return now;
+      }
+
+      if (now - created > SESSION_TTL_MS) {
+        // TTL expirado: borrar todo y recargar
+        ['skratica_letter','skratica_team','skratica_mode','skratica_word',
+         'skratica_word_bonus','skratica_word_order','skratica_word_used',
+         'skratica_word_used_bonuses','skratica_word_final',
+         'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
+         'skratica_created_at'].forEach(k => localStorage.removeItem(k));
+        location.reload();
+        return; // nunca llega aquí
+      }
+
+      return created;
+    }
+
     function getOrAssignLetter() {
       const saved = localStorage.getItem('skratica_letter');
       if (saved) {
@@ -1604,6 +1666,16 @@
     // INIT
     // ─────────────────────────────────────────────
     (async function init() {
+      // Comprobar TTL de sesión antes de leer ningún otro valor del storage
+      const createdAt = await checkAndResetIfExpired();
+
+      // Renderizar identificador de sesión
+      if (createdAt) {
+        const { current, next } = getSessionLabel(createdAt);
+        document.getElementById('session-label').textContent = current;
+        document.getElementById('session-next').textContent  = next;
+      }
+
       const myEntry   = getOrAssignLetter();
       const myTeamKey = getOrAssignTeam();
       const myMode    = getMode();
@@ -1730,7 +1802,8 @@
            ['skratica_letter','skratica_team','skratica_mode','skratica_word',
             'skratica_word_bonus','skratica_word_order','skratica_word_used',
             'skratica_word_used_bonuses','skratica_word_final',
-            'skratica_share_url','skratica_surplus_shared','skratica_surplus_url'].forEach(k => localStorage.removeItem(k));
+            'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
+            'skratica_created_at'].forEach(k => localStorage.removeItem(k));
           location.reload();
           return;
         } else {
