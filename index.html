@@ -112,25 +112,24 @@
       line-height: 1;
     }
 
-    .qr-panel {
-      position: absolute;
-      inset: 0;
-      background: #fff;
-      border: 3px solid var(--team-tile-border);
-      border-radius: 24px;
-      box-shadow:
-        0 4px 0 #c8bfa8,
-        0 8px 0 #b8af98,
-        0 10px 24px rgba(0,0,0,0.6),
-        0 0 40px var(--team-glow);
-      display: flex;
+    /* ── Panel QR independiente (fuera del tile-wrapper) ── */
+    #qr-panel {
+      display: none;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s ease;
+      gap: 20px;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    #qr-panel.visible { display: flex; }
+
+    .qr-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 16px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--team-glow);
+      transition: box-shadow 0.3s;
     }
 
     .qr-tile-hint {
@@ -138,8 +137,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width:  clamp(48px, 14vmin, 68px);
-      height: clamp(48px, 14vmin, 68px);
+      width:  clamp(44px, 14vmin, 62px);
+      height: clamp(44px, 14vmin, 62px);
       background: #f5efe0;
       border: 2px solid var(--team-tile-border);
       border-radius: 10px;
@@ -151,40 +150,38 @@
       line-height: 1;
       pointer-events: none;
     }
+
     .qr-tile-hint .qh-letter {
       font-family: 'Segoe UI', sans-serif;
-      font-size: clamp(22px, 7vmin, 36px);
+      font-size: clamp(20px, 7vmin, 34px);
       font-weight: 900;
       color: #3a3020;
       line-height: 1;
     }
+
     .qr-tile-hint .qh-score {
-      font-size: clamp(8px, 2vmin, 11px);
+      font-size: clamp(7px, 2vmin, 10px);
       font-weight: 700;
       color: #8a7a60;
       line-height: 1;
     }
 
-    .qr-panel.visible { opacity: 1; pointer-events: auto; }
-
     #qr-countdown {
-      display: none;
-      text-align: center;
-      font-size: clamp(0.95rem, 3.5vmin, 1.25rem);
+      font-size: 1.4rem;
       font-weight: 700;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.2em;
       color: #c0c0d8;
       transition: color 0.3s;
       font-variant-numeric: tabular-nums;
-      line-height: 1;
+      text-align: center;
     }
 
-    #qr-countdown.visible { display: block; }
-    #qr-countdown.urgent  { color: #e05252; }
+    #qr-countdown.urgent { color: #e05252; }
 
     #qr-code canvas, #qr-code img {
-      width: min(52vmin, 260px) !important;
-      height: min(52vmin, 260px) !important;
+      width: 240px !important;
+      height: 240px !important;
+      display: block;
     }
 
     .hints {
@@ -570,14 +567,18 @@
         <span class="tile-letter" id="tile-letter"></span>
         <span class="tile-score"  id="tile-score"></span>
       </div>
-      <div class="qr-panel" id="qr-panel">
+    </div>
+
+    <!-- Panel QR independiente (visible en modo compartir) -->
+    <div id="qr-panel">
+      <div class="qr-box">
         <div id="qr-code"></div>
         <div class="qr-tile-hint">
           <span class="qh-letter" id="qr-hint-letter"></span>
           <span class="qh-score"  id="qr-hint-score"></span>
         </div>
-        <div id="qr-countdown"></div>
       </div>
+      <div id="qr-countdown"></div>
     </div>
     <div class="hints">
       <span class="hint hint--tap" id="hint-tap">
@@ -1025,7 +1026,7 @@
     }
 
     function showQRPanel(entry) {
-      document.getElementById('tile').classList.add('hidden');
+      document.getElementById('tile-wrapper').style.display = 'none';
       document.getElementById('qr-panel').classList.add('visible');
       document.querySelector('.hints').style.opacity = '0';
       if (entry) {
@@ -1035,6 +1036,12 @@
       // Iniciar cuenta atrás si hay URL guardada
       const expiry = getShareExpiry();
       if (expiry) startCountdown(expiry);
+    }
+
+    function hideQRPanel() {
+      document.getElementById('qr-panel').classList.remove('visible');
+      document.getElementById('tile-wrapper').style.display = '';
+      document.querySelector('.hints').style.opacity = '';
     }
 
     function getShareExpiry() {
@@ -1071,7 +1078,6 @@
       }
 
       tick();
-      el.classList.add('visible');
       _countdownInterval = setInterval(tick, 500);
     }
 
@@ -1105,6 +1111,11 @@
     }
 
     function initShareMode(entry, teamKey, teamConf) {
+      // Tap on QR panel → back to tile view
+      document.getElementById('qr-panel').addEventListener('click', () => {
+        hideQRPanel();
+      });
+
       // Si hay URL guardada de una sesión anterior de sharing, mostrar QR directamente
       const savedUrl = localStorage.getItem('skratica_share_url');
       if (savedUrl) {

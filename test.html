@@ -236,6 +236,7 @@
       border-radius: 20px;
       padding: 16px;
       transition: box-shadow 0.3s;
+      position: relative;
     }
 
     .qr-box.type-reset {
@@ -256,43 +257,43 @@
       display: block;
     }
 
-    /* Ficha mini sobre el QR de letra */
-    .qr-tile-badge {
+    /* Ficha hint superpuesta en el centro del QR (igual que index.html) */
+    .qr-tile-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width:  clamp(44px, 14vmin, 62px);
+      height: clamp(44px, 14vmin, 62px);
+      background: #f5efe0;
+      border: 2px solid #e0d8c8;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 3px #fff;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-radius: 10px;
-      padding: 6px 14px 8px;
-      gap: 2px;
-      margin-top: -4px;
+      line-height: 1;
+      pointer-events: none;
     }
 
-    .qr-tile-badge.visible { display: flex; }
+    .qr-tile-hint.visible { display: flex; }
 
-    .qr-tile-badge.team-a {
-      background: #fdf0f0;
-      border: 2px solid #e8c4c4;
-      color: #1a1a2e;
-    }
+    .qr-tile-hint.team-a { border-color: #e8c4c4; background: #fdf0f0; }
+    .qr-tile-hint.team-b { border-color: #c4cce8; background: #f0f3fd; }
 
-    .qr-tile-badge.team-b {
-      background: #f0f3fd;
-      border: 2px solid #c4cce8;
-      color: #1a1a2e;
-    }
-
-    .badge-letter {
-      font-family: 'Georgia', serif;
-      font-size: 2rem;
-      font-weight: 700;
+    .qh-letter {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: clamp(20px, 7vmin, 34px);
+      font-weight: 900;
+      color: #3a3020;
       line-height: 1;
     }
 
-    .badge-score {
-      font-size: 0.7rem;
+    .qh-score {
+      font-size: clamp(7px, 2vmin, 10px);
       font-weight: 700;
-      color: #5a4fd1;
+      color: #8a7a60;
       line-height: 1;
     }
 
@@ -332,6 +333,14 @@
     }
 
     .btn-back:hover { color: #fff; border-color: #6a6a8a; }
+
+    #qr-direct-link {
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+    #qr-direct-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -379,13 +388,14 @@
     <div class="qr-label" id="qr-label">Escanea el código</div>
     <div class="qr-box" id="qr-box">
       <div id="qr-code"></div>
-    </div>
-    <div class="qr-tile-badge" id="qr-tile-badge">
-      <span class="badge-letter" id="badge-letter"></span>
-      <span class="badge-score"  id="badge-score"></span>
+      <div class="qr-tile-hint" id="qr-tile-hint">
+        <span class="qh-letter" id="qh-letter"></span>
+        <span class="qh-score"  id="qh-score"></span>
+      </div>
     </div>
     <div id="qr-countdown"></div>
     <p class="qr-note" id="qr-note"></p>
+    <a id="qr-direct-link" href="#" target="_blank" rel="noopener">Abrir enlace directamente</a>
     <button class="btn-back" id="btn-back">Volver</button>
   </div>
 
@@ -515,15 +525,16 @@
 
       document.getElementById('qr-label').textContent = label;
       document.getElementById('qr-note').innerHTML    = note;
+      document.getElementById('qr-direct-link').href  = url;
 
-      // Ficha de letra (solo para tiles de equipo)
-      const badge = document.getElementById('qr-tile-badge');
+      // Ficha hint superpuesta en el centro del QR (solo para tiles de equipo)
+      const hint = document.getElementById('qr-tile-hint');
       if (badgeEntry) {
-        badge.className = `qr-tile-badge visible ${teamClass}`;
-        document.getElementById('badge-letter').textContent = badgeEntry.letter;
-        document.getElementById('badge-score').textContent  = `${badgeEntry.score} pts`;
+        hint.className = `qr-tile-hint visible ${teamClass}`;
+        document.getElementById('qh-letter').textContent = badgeEntry.letter;
+        document.getElementById('qh-score').textContent  = badgeEntry.score;
       } else {
-        badge.className = 'qr-tile-badge';
+        hint.className = 'qr-tile-hint';
       }
 
       // Mostrar vista QR
