@@ -323,6 +323,35 @@
       line-height: 1;
     }
 
+    /* Badge de bonus en mini-tile */
+    .mini-tile-bonus {
+      position: absolute;
+      bottom: 3px;
+      left: 3px;
+      font-size: min(2.8vmin, 12px);
+      font-weight: 700;
+      color: #5a4fd1;
+      line-height: 1;
+      opacity: 0.45;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Badge activo: bonus aplica según posición */
+    .mini-tile-bonus.bonus-active {
+      opacity: 1;
+      font-weight: 900;
+    }
+
+    /* Desglose de bonus aplicados */
+    .bonus-breakdown {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-top: 5px;
+      min-height: 1em;
+      text-align: center;
+    }
+
     /* Puntuación parcial */
     .score-display {
       text-align: center;
@@ -449,6 +478,31 @@
 
     .btn-validate:hover { background: #6a59e0; }
     .btn-validate:active { transform: translateY(1px); }
+
+    .word-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-reorder {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--text-muted);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, transform 0.1s;
+    }
+
+    .btn-reorder:hover { color: #fff; border-color: #fff; }
+    .btn-reorder:active { transform: translateY(1px); }
 
     /* ══════════════════════════════
        VISTA DONE — palabra validada
@@ -666,8 +720,12 @@
     <div class="score-display">
       <div class="score-value" id="partial-score">0</div>
       <div class="score-label">puntos acumulados</div>
+      <div class="bonus-breakdown" id="bonus-breakdown"></div>
     </div>
-    <button class="btn-validate" id="btn-validate">Reordenar letras</button>
+    <div class="word-actions">
+      <button class="btn-reorder" id="btn-reorder">Reordenar letras</button>
+      <button class="btn-validate" id="btn-validate">Validar palabra</button>
+    </div>
   </div>
 
   <!-- ── Vista done (palabra validada) ── -->
@@ -681,6 +739,7 @@
     <div class="final-score">
       <div class="score-value" id="final-score-value"></div>
       <div class="score-label">puntos</div>
+      <div class="bonus-breakdown" id="bonus-breakdown-done"></div>
     </div>
     <p class="final-team-msg" id="final-team-msg"></p>
     <button class="btn-surplus" id="btn-surplus" style="display:none">Compartir letras sobrantes</button>
@@ -691,8 +750,8 @@
     <div class="confirm-icon">⚠️</div>
     <div class="confirm-title">¿Compartir tu ficha?</div>
     <div class="confirm-msg">
-      Una vez que compartas tu ficha <strong>no podrás deshacer la acción</strong>.<br><br>
-      Otro miembro de tu equipo tendrá <strong>30 segundos</strong> para escanear el código QR de tu ficha.
+      Compartir tu ficha <strong>es una acción irreversible</strong>.<br><br>
+      Otro miembro de tu equipo tendrá <strong>30 segundos</strong> para escanear el QR de tu ficha y podrá recibir un bonus.
     </div>
     <div class="confirm-buttons">
       <button class="btn-confirm-no"  id="btn-confirm-no">Cancelar</button>
@@ -833,15 +892,60 @@
     function setMode(m)      { localStorage.setItem('skratica_mode', m); }
     function getWordLetters(){ return JSON.parse(localStorage.getItem('skratica_word') || '[]'); }
     function setWordLetters(arr){ localStorage.setItem('skratica_word', JSON.stringify(arr)); }
+    function getWordBonuses(){ return JSON.parse(localStorage.getItem('skratica_word_bonus') || '[]'); }
+    function setWordBonuses(arr){ localStorage.setItem('skratica_word_bonus', JSON.stringify(arr)); }
+
+    // Elige un bonus según la antigüedad de la ficha (en ms)
+    // Bonus de letra más probables que de palabra; magnitud mayor cuanto más rápido
+    function pickBonus(ageMs) {
+      const age = ageMs / 1000; // segundos
+      let weights;
+      if (age < 5) {
+        // Muy rápido: ×3 más probable
+        weights = [{ b: '3L', w: 35 }, { b: '2L', w: 35 }, { b: '3W', w: 20 }, { b: '2W', w: 10 }];
+      } else if (age < 15) {
+        weights = [{ b: '3L', w: 25 }, { b: '2L', w: 35 }, { b: '3W', w: 15 }, { b: '2W', w: 25 }];
+      } else {
+        // Lento: ×2 más probable
+        weights = [{ b: '3L', w: 15 }, { b: '2L', w: 40 }, { b: '3W', w: 10 }, { b: '2W', w: 35 }];
+      }
+      const total = weights.reduce((s, x) => s + x.w, 0);
+      let r = Math.random() * total;
+      for (const { b, w } of weights) { r -= w; if (r <= 0) return b; }
+      return '2L';
+    }
+
+    // Calcula si un bonus aplica según la posición (1-indexed)
+    // ×2 → posición par (2,4,6…); ×3 → posición impar (1,3,5…)
+    function bonusApplies(bonus, pos1indexed) {
+      if (bonus === '1') return false;
+      const isOdd = pos1indexed % 2 !== 0;
+      if (bonus === '3L' || bonus === '3W') return isOdd;
+      if (bonus === '2L' || bonus === '2W') return !isOdd;
+      return false;
+    }
+
+    // Devuelve el multiplicador de letra y de palabra que aplica en una posición
+    function bonusMultipliers(bonus, pos1indexed) {
+      if (!bonusApplies(bonus, pos1indexed)) return { letter: 1, word: 1 };
+      if (bonus === '2L') return { letter: 2, word: 1 };
+      if (bonus === '3L') return { letter: 3, word: 1 };
+      if (bonus === '2W') return { letter: 1, word: 2 };
+      if (bonus === '3W') return { letter: 1, word: 3 };
+      return { letter: 1, word: 1 };
+    }
 
     // ─────────────────────────────────────────────
     // CONSTRUCCIÓN DE FICHAS PEQUEÑAS
     // ─────────────────────────────────────────────
-    function buildMiniTile(letterStr) {
+    // bonus: '1' | '2L' | '3L' | '2W' | '3W'
+    // active: true si el bonus aplica según la posición en la palabra
+    function buildMiniTile(letterStr, bonus, active) {
       const entry = letterEntry(letterStr);
       const tile  = document.createElement('div');
       tile.className = 'mini-tile';
       tile.dataset.letter = entry.letter;
+      if (bonus && bonus !== '1') tile.dataset.bonus = bonus;
       const l = document.createElement('span');
       l.className = 'mini-tile-letter';
       l.textContent = entry.letter;
@@ -850,11 +954,34 @@
       s.textContent = entry.score;
       tile.appendChild(l);
       tile.appendChild(s);
+      if (bonus && bonus !== '1') {
+        const b = document.createElement('span');
+        b.className = 'mini-tile-bonus' + (active ? ' bonus-active' : '');
+        b.textContent = bonus === '2L' ? '×2L'
+                      : bonus === '3L' ? '×3L'
+                      : bonus === '2W' ? '×2P'
+                      : '×3P';
+        tile.appendChild(b);
+      }
       return tile;
     }
 
-    function calcScore(letters) {
-      return letters.reduce((sum, l) => sum + (letterEntry(l).score || 0), 0);
+    // letters: array de letras usadas en el orden de la palabra (1-indexed por posición)
+    // bonuses: array paralelo de bonus; si no se pasa se ignoran multiplicadores
+    function calcScore(letters, bonuses) {
+      if (!bonuses || bonuses.length === 0) {
+        return letters.reduce((sum, l) => sum + (letterEntry(l).score || 0), 0);
+      }
+      let letterTotal = 0;
+      let wordMult    = 1;
+      letters.forEach((l, i) => {
+        const pos   = i + 1; // 1-indexed
+        const bonus = bonuses[i] || '1';
+        const { letter: lm, word: wm } = bonusMultipliers(bonus, pos);
+        letterTotal += (letterEntry(l).score || 0) * lm;
+        if (wm > wordMult) wordMult = wm;
+      });
+      return letterTotal * wordMult;
     }
 
     // Actualiza opacidad de fichas según qué letras están usadas en inputStr
@@ -909,6 +1036,102 @@
       applyUsageToTilesAndReturn(inputStr, allLetters);
     }
 
+    // Dado un wordStr, allLetters y allBonuses, devuelve las letras y bonuses usados en orden de palabra
+    function getUsedWithBonuses(wordStr, allLetters, allBonuses) {
+      const wordUp = (wordStr || '').toUpperCase();
+      const tmpPool = allLetters.map((l, i) => ({ l: l.toUpperCase(), i }));
+      const used = [];
+      const usedBonuses = [];
+      for (const ch of wordUp) {
+        const found = tmpPool.find(x => x.l === ch);
+        if (found) {
+          used.push(allLetters[found.i]);
+          usedBonuses.push((allBonuses && allBonuses[found.i]) || '1');
+          tmpPool.splice(tmpPool.indexOf(found), 1);
+        }
+      }
+      return { used, usedBonuses };
+    }
+
+    // Reconstruye las mini-tiles del #tiles-row mostrando bonus activos según posición en la palabra    // allLetters: array de letras acumuladas (índice original)
+    // allBonuses: array paralelo de bonus
+    // wordStr: palabra en el orden actual (para calcular posiciones)
+    function rebuildTilesWithBonuses(container, allLetters, allBonuses, wordStr) {
+      container.innerHTML = '';
+      const wordUp = (wordStr || '').toUpperCase();
+
+      // Mapear índices originales al orden de la palabra
+      const tmpPool = allLetters.map((l, i) => ({ l: l.toUpperCase(), i }));
+      const orderedIndices = []; // índices originales en el orden de wordStr
+      for (const ch of wordUp) {
+        const found = tmpPool.find(x => x.l === ch);
+        if (found) {
+          orderedIndices.push(found.i);
+          tmpPool.splice(tmpPool.indexOf(found), 1);
+        }
+      }
+      // Índices de letras no usadas (sobrantes)
+      const usedSet = new Set(orderedIndices);
+      const unusedIndices = allLetters.map((_, i) => i).filter(i => !usedSet.has(i));
+
+      // Primera pasada: letras usadas en orden de la palabra
+      orderedIndices.forEach((origIdx, pos0) => {
+        const letter = allLetters[origIdx];
+        const bonus  = (allBonuses && allBonuses[origIdx]) || '1';
+        const active = bonusApplies(bonus, pos0 + 1);
+        container.appendChild(buildMiniTile(letter, bonus, active));
+      });
+
+      // Segunda pasada: letras sobrantes al final, tenues
+      unusedIndices.forEach(origIdx => {
+        const letter = allLetters[origIdx];
+        const bonus  = (allBonuses && allBonuses[origIdx]) || '1';
+        const tile   = buildMiniTile(letter, bonus, false);
+        tile.classList.add('unused');
+        container.appendChild(tile);
+      });
+    }
+
+    // Genera el texto de desglose de bonus aplicados para un conjunto de letras usadas
+    // usedLetters: array de letras en orden de palabra, usedBonuses: array paralelo
+    // Devuelve string vacío si no hay ningún bonus activo
+    function buildBonusBreakdown(usedLetters, usedBonuses) {
+      if (!usedBonuses || usedBonuses.length === 0) return '';
+
+      const letterParts = {}; // '×2L' → [pos, pos, ...]
+      let wordBonus     = 1;
+      let wordBonusLabel = '';
+
+      usedLetters.forEach((_, i) => {
+        const pos   = i + 1;
+        const bonus = usedBonuses[i] || '1';
+        if (!bonusApplies(bonus, pos)) return;
+
+        if (bonus === '2L' || bonus === '3L') {
+          const label = bonus === '2L' ? '×2L' : '×3L';
+          if (!letterParts[label]) letterParts[label] = [];
+          letterParts[label].push('P' + pos);
+        } else if (bonus === '2W' || bonus === '3W') {
+          const mult = bonus === '2W' ? 2 : 3;
+          if (mult > wordBonus) {
+            wordBonus      = mult;
+            wordBonusLabel = (bonus === '2W' ? '×2P' : '×3P') + ' en P' + pos;
+          }
+        }
+      });
+
+      const parts = [];
+      for (const [label, positions] of Object.entries(letterParts)) {
+        parts.push(label + ' en ' + positions.join(', '));
+      }
+      if (wordBonusLabel) parts.push(wordBonusLabel);
+
+      if (parts.length === 0) return '';
+      let text = parts.join(' · ');
+      if (wordBonus > 1) text += ' → ×' + wordBonus + ' palabra';
+      return text;
+    }
+
     // ─────────────────────────────────────────────
     // MOSTRAR VISTAS
     // ─────────────────────────────────────────────
@@ -930,36 +1153,24 @@
       closeBtn.addEventListener('click', handler);
     }
 
-    function showWordView(teamConf, letters, forceBtnState) {
+    function showWordView(teamConf, letters) {
       document.getElementById('view-normal').style.display = 'none';
-      const row = document.getElementById('tiles-row');
-      row.innerHTML = '';
-      letters.forEach(l => row.appendChild(buildMiniTile(l)));
+      const row     = document.getElementById('tiles-row');
+      const bonuses = getWordBonuses();
 
-      // Preview: orden confirmado si existe, si no orden de acumulación
-      const confirmedWord = localStorage.getItem('skratica_word_order') || letters.join('');
-      document.getElementById('word-preview').textContent = confirmedWord.toUpperCase();
+      // Orden activo: confirmado si existe, si no orden de acumulación
+      const currentWord = localStorage.getItem('skratica_word_order') || letters.join('');
+      document.getElementById('word-preview').textContent = currentWord.toUpperCase();
 
-      // Score: solo letras usadas confirmadas
-      const confirmedUsed = localStorage.getItem('skratica_word_used');
-      const usedLetters   = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
-      document.getElementById('partial-score').textContent = calcScore(usedLetters);
+      // Score con bonuses según posición actual
+      const { used: usedLetters, usedBonuses } = getUsedWithBonuses(currentWord, letters, bonuses);
+      document.getElementById('partial-score').textContent    = calcScore(usedLetters, usedBonuses);
+      document.getElementById('bonus-breakdown').textContent  = buildBonusBreakdown(usedLetters, usedBonuses);
 
-      // Aplicar opacidad SIEMPRE (si no hay confirmado, todas usadas)
-      applyUsageToTilesAndReturn(confirmedWord, letters);
+      // Reconstruir tiles con badges de bonus
+      rebuildTilesWithBonuses(row, letters, bonuses, currentWord);
 
       document.getElementById('team-label-word').textContent = teamConf.label;
-
-      // Estado del botón: forzado si se indica, si no inferir del estado
-      const btn = document.getElementById('btn-validate');
-      const btnState = forceBtnState || (confirmedUsed ? 'validate' : 'reorder');
-      if (btnState === 'validate') {
-        btn.textContent   = 'Validar palabra';
-        btn.dataset.state = 'validate';
-      } else {
-        btn.textContent   = 'Reordenar letras';
-        btn.dataset.state = 'reorder';
-      }
 
       // Ocultar input
       document.getElementById('word-input').classList.remove('visible');
@@ -972,20 +1183,23 @@
       document.getElementById('view-normal').style.display = 'none';
       document.getElementById('view-word').classList.remove('active');
 
-      // Usar el orden y letras usadas confirmados si existen
-      const confirmedWord  = localStorage.getItem('skratica_word_order') || letters.join('');
-      const confirmedUsed  = localStorage.getItem('skratica_word_used');
-      const usedLetters    = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
-      const unusedLetters  = confirmedUsed
-        ? (() => { const p = [...letters]; usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i,1); }); return p; })()
-        : [];
+      const confirmedWord = localStorage.getItem('skratica_word_order') || letters.join('');
+      const allBonuses    = getWordBonuses();
+
+      // Letras usadas = las que forman la palabra en el orden confirmado
+      const { used: usedLetters, usedBonuses } = getUsedWithBonuses(confirmedWord, letters, allBonuses);
+
+      // Letras sobrantes = las que no entraron en la palabra
+      const unusedLetters = (() => {
+        const p = [...letters];
+        usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i, 1); });
+        return p;
+      })();
 
       // Letras sobrantes ya compartidas
       const sharedAlready  = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
-      // Copia mutable para marcar compartidas (respeta multiplicidades)
-      const sharedPool     = [...sharedAlready];
       const pendingLetters = (() => {
-        const pool = [...sharedPool];
+        const pool = [...sharedAlready];
         return unusedLetters.filter(l => {
           const i = pool.indexOf(l);
           if (i !== -1) { pool.splice(i, 1); return false; }
@@ -995,33 +1209,35 @@
 
       const row = document.getElementById('tiles-row-done');
       row.innerHTML = '';
-      // Fichas usadas
-      usedLetters.forEach(l => row.appendChild(buildMiniTile(l)));
-      // Fichas sobrantes: pendientes (tenues) o ya compartidas (muy tenues)
-      const sharedMark = [...sharedAlready];
-      unusedLetters.forEach(l => {
-        const t = buildMiniTile(l);
-        const si = sharedMark.indexOf(l);
-        if (si !== -1) {
-          sharedMark.splice(si, 1);
-          t.classList.add('shared');
-        } else {
-          t.classList.add('unused');
-        }
+
+      // Fichas usadas con badge según posición
+      usedLetters.forEach((l, pos0) => {
+        const bonus  = usedBonuses[pos0] || '1';
+        const active = bonusApplies(bonus, pos0 + 1);
+        const t = buildMiniTile(l, bonus, active);
         row.appendChild(t);
       });
 
-      const score = calcScore(usedLetters);
+      // Fichas sobrantes: pendientes (tenues) o ya compartidas (muy tenues)
+      const sharedMark = [...sharedAlready];
+      unusedLetters.forEach(l => {
+        const t = buildMiniTile(l, '1', false);
+        const si = sharedMark.indexOf(l);
+        if (si !== -1) { sharedMark.splice(si, 1); t.classList.add('shared'); }
+        else { t.classList.add('unused'); }
+        row.appendChild(t);
+      });
 
-      document.getElementById('word-display').textContent      = confirmedWord.toUpperCase();
-      document.getElementById('final-score-value').textContent = score;
-      document.getElementById('team-label-done').textContent   = teamConf.label;
-      document.getElementById('final-team-msg').innerHTML      =
+      const score = calcScore(usedLetters, usedBonuses);
+
+      document.getElementById('word-display').textContent          = confirmedWord.toUpperCase();
+      document.getElementById('final-score-value').textContent     = score;
+      document.getElementById('team-label-done').textContent       = teamConf.label;
+      document.getElementById('bonus-breakdown-done').textContent  = buildBonusBreakdown(usedLetters, usedBonuses);
+      document.getElementById('final-team-msg').innerHTML          =
         `${score} puntos para el equipo <strong>${teamConf.label}</strong>`;
 
-      // Mostrar botón sobrantes solo si quedan pendientes
-      const btnSurplus = document.getElementById('btn-surplus');
-      btnSurplus.style.display = pendingLetters.length > 0 ? '' : 'none';
+      document.getElementById('btn-surplus').style.display = pendingLetters.length > 0 ? '' : 'none';
 
       document.getElementById('view-done').classList.add('active');
     }
@@ -1094,7 +1310,11 @@
         return { ok: false, title: 'Letra desconocida', msg: `La letra "${inLetter}" no es válida.` };
       }
 
-      return { ok: true, letter: inLetter };
+      // Asignar bonus (30% de probabilidad, magnitud según velocidad de escaneo)
+      const ageMs = Date.now() - inTs;
+      const bonus = Math.random() < 0.30 ? pickBonus(ageMs) : '1';
+
+      return { ok: true, letter: inLetter, bonus };
     }
 
     // ─────────────────────────────────────────────
@@ -1244,8 +1464,9 @@
     // ─────────────────────────────────────────────
 
     function getPendingSurplus(letters) {
-      const confirmedUsed = localStorage.getItem('skratica_word_used');
-      const usedLetters   = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
+      const wordOrder = localStorage.getItem('skratica_word_order') || letters.join('');
+      const bonuses   = getWordBonuses();
+      const { used: usedLetters } = getUsedWithBonuses(wordOrder, letters, bonuses);
       const unusedLetters = (() => {
         const p = [...letters];
         usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i, 1); });
@@ -1288,10 +1509,24 @@
         btnBack.classList.remove('visible');
         btnBack.removeEventListener('click', onBack);
 
-        // Marcar letra como compartida
+        // Marcar letra como compartida (bonus se pierde al compartir)
         const shared = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
         shared.push(entry.letter);
         localStorage.setItem('skratica_surplus_shared', JSON.stringify(shared));
+
+        // Resetear el bonus de esa letra a '1' en skratica_word_bonus
+        const allLetters = getWordLetters();
+        const allBonuses = getWordBonuses();
+        // Encontrar el índice de la primera ocurrencia no ya reseteada de esta letra
+        // Buscamos la primera posición donde letter coincide y bonus !== '1'
+        // (puede haber varias ocurrencias, reseteamos solo la primera con bonus)
+        let resetIdx = allLetters.findIndex((l, i) => l === entry.letter && allBonuses[i] !== '1');
+        if (resetIdx === -1) resetIdx = allLetters.indexOf(entry.letter);
+        if (resetIdx !== -1) {
+          allBonuses[resetIdx] = '1';
+          setWordBonuses(allBonuses);
+        }
+
         localStorage.removeItem('skratica_surplus_url');
 
         // Parar countdown
@@ -1371,6 +1606,7 @@
 
       wordInput.addEventListener('input', () => {
         const letters = getWordLetters();
+        const bonuses = getWordBonuses();
         let val = wordInput.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ]/gi, '');
 
         // Filtrar: solo letras disponibles en el pool, sin exceder repeticiones
@@ -1389,86 +1625,67 @@
           wordInput.value = filtered;
         }
 
-        // Actualizar preview y opacidad en tiempo real
-        document.getElementById('word-preview').textContent = filtered || letters.join('').toUpperCase();
-        const { used } = applyUsageToTilesAndReturn(filtered, letters);
-        document.getElementById('partial-score').textContent = calcScore(used);
+        // Actualizar preview, tiles con bonus y score en tiempo real; persistir orden
+        const currentWord = filtered || letters.join('').toUpperCase();
+        document.getElementById('word-preview').textContent = currentWord;
+        if (filtered) localStorage.setItem('skratica_word_order', filtered);
+        else localStorage.removeItem('skratica_word_order');
+        const row = document.getElementById('tiles-row');
+        rebuildTilesWithBonuses(row, letters, bonuses, currentWord);
+        const { used: usedArr, usedBonuses: usedBonusArr } = getUsedWithBonuses(currentWord, letters, bonuses);
+        document.getElementById('partial-score').textContent   = calcScore(usedArr, usedBonusArr);
+        document.getElementById('bonus-breakdown').textContent = buildBonusBreakdown(usedArr, usedBonusArr);
       });
 
-      // ── Validar / Reordenar / Confirmar ───────────────────────────
-      document.getElementById('btn-validate').addEventListener('click', () => {
-        const btn     = document.getElementById('btn-validate');
+      // ── Botón secundario: volver a reordenar desde estado validate ──
+      document.getElementById('btn-reorder').addEventListener('click', () => {
         const letters = getWordLetters();
-        const state   = btn.dataset.state || 'reorder';
-
-        // Estado: "reorder" → mostrar input, cambiar a "confirmar"
-        if (state === 'reorder') {
+        const isVisible = wordInput.classList.contains('visible');
+        if (isVisible) {
+          // Cerrar input: guardar orden actual
+          const input = wordInput.value.toUpperCase();
+          if (input) localStorage.setItem('skratica_word_order', input);
+          else localStorage.removeItem('skratica_word_order');
+          wordInput.classList.remove('visible');
+          showWordView(teamConf, letters);
+        } else {
+          // Abrir input con el orden actual
           wordInput.value = localStorage.getItem('skratica_word_order') || '';
           wordInput.classList.add('visible');
           wordInput.focus();
-          btn.textContent  = 'Confirmar';
-          btn.dataset.state = 'confirm';
-          return;
         }
+      });
 
-        // Estado: "confirm" → guardar orden, volver a "validar"
-        if (state === 'confirm') {
-          const input    = wordInput.value.toUpperCase();
-          const pool     = [...letters];
-          const usedArr  = [];
-          for (const ch of input) {
-            const idx = pool.indexOf(ch);
-            if (idx !== -1) { usedArr.push(ch); pool.splice(idx, 1); }
-          }
+      // ── Validar palabra ───────────────────────────────────────────
+      document.getElementById('btn-validate').addEventListener('click', () => {
+        const letters = getWordLetters();
+        const bonuses = getWordBonuses();
+        const wordOrder = localStorage.getItem('skratica_word_order') || letters.join('');
+        const { used: usedLetters } = getUsedWithBonuses(wordOrder, letters, bonuses);
+        const wordForDict = usedLetters.join('').toLowerCase();
+        // Si el input está abierto, cerrarlo primero
+        wordInput.classList.remove('visible');
 
-          // Persistir el orden y las letras usadas
-          localStorage.setItem('skratica_word_order', input);
-          localStorage.setItem('skratica_word_used',  JSON.stringify(usedArr));
-
-          // Actualizar score y ocultar input
-          document.getElementById('partial-score').textContent = calcScore(usedArr);
-          document.getElementById('word-preview').textContent  = input || letters.join('').toUpperCase();
-          applyUsageToTiles(input, letters);
-
-          wordInput.classList.remove('visible');
-          btn.textContent   = 'Validar palabra';
-          btn.dataset.state = 'validate';
-          return;
-        }
-
-        // Estado: "validate" → validar contra diccionario
-        if (state === 'validate') {
-          const confirmedWord = (localStorage.getItem('skratica_word_order') || letters.join('')).toLowerCase();
-          const confirmedUsed = localStorage.getItem('skratica_word_used');
-          const usedLetters   = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
-          const wordToCheck   = usedLetters.join('').toLowerCase();
-
-          // Usar el orden confirmado si existe, si no las letras en orden de acumulación
-          const wordForDict = localStorage.getItem('skratica_word_order')
-            ? confirmedWord
-            : wordToCheck;
-
-          if (typeof WORDS_ES === 'undefined') {
-            setMode('done');
-            showDoneView(teamConf, letters);
-            initSurplusShare(myTeamKey, teamConf, letters);
-            return;
-          }
-
-          if (!WORDS_ES.has(wordForDict)) {
-            showError(
-              'Palabra no válida',
-              `"${wordForDict.toUpperCase()}" no es una palabra válida en el diccionario de Scrabble. Sigue añadiendo letras o intenta otra combinación.`,
-              () => showWordView(teamConf, letters, 'reorder')
-            );
-            return;
-          }
-
+        if (typeof WORDS_ES === 'undefined') {
           setMode('done');
-          localStorage.setItem('skratica_word_final', wordForDict);
           showDoneView(teamConf, letters);
           initSurplusShare(myTeamKey, teamConf, letters);
+          return;
         }
+
+        if (!WORDS_ES.has(wordForDict)) {
+          showError(
+            'Palabra no válida',
+            `"${wordForDict.toUpperCase()}" no es una palabra válida en el diccionario de Scrabble. Sigue añadiendo letras o intenta otra combinación.`,
+            () => showWordView(teamConf, letters)
+          );
+          return;
+        }
+
+        setMode('done');
+        localStorage.setItem('skratica_word_final', wordForDict);
+        showDoneView(teamConf, letters);
+        initSurplusShare(myTeamKey, teamConf, letters);
       });
 
       // ¿Llega parámetro ?reset=?
@@ -1495,9 +1712,10 @@
 
         if (resetValid) {
           // Borrar todo el localStorage de Skratica y recargar limpio
-          ['skratica_letter','skratica_team','skratica_mode','skratica_word',
-           'skratica_word_order','skratica_word_used','skratica_word_final',
-           'skratica_share_url','skratica_surplus_shared','skratica_surplus_url'].forEach(k => localStorage.removeItem(k));
+           ['skratica_letter','skratica_team','skratica_mode','skratica_word',
+            'skratica_word_bonus','skratica_word_order','skratica_word_used',
+            'skratica_word_used_bonuses','skratica_word_final',
+            'skratica_share_url','skratica_surplus_shared','skratica_surplus_url'].forEach(k => localStorage.removeItem(k));
           location.reload();
           return;
         } else {
@@ -1541,19 +1759,22 @@
 
         // Añadir letra a la colección
         const letters = getWordLetters();
+        const bonuses = getWordBonuses();
 
-        // Si es la primera letra del modo palabra, añadir también la propia
+        // Si es la primera letra del modo palabra, añadir también la propia (sin bonus)
         if (myMode === 'normal' && letters.length === 0) {
           letters.push(myEntry.letter);
+          bonuses.push('1');
         }
 
         letters.push(result.letter);
+        bonuses.push(result.bonus);
         setWordLetters(letters);
+        setWordBonuses(bonuses);
         setMode('word');
 
         // Resetear orden confirmado al añadir nueva letra
         localStorage.removeItem('skratica_word_order');
-        localStorage.removeItem('skratica_word_used');
         localStorage.removeItem('skratica_share_url');
 
         showWordView(teamConf, letters);
