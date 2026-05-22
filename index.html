@@ -866,6 +866,23 @@
     }
 
     // ─────────────────────────────────────────────
+    // TIEMPO DE RED — evita diferencias de reloj entre dispositivos
+    // ─────────────────────────────────────────────
+    async function getNetworkTime() {
+      try {
+        const res = await fetch(SHARE_BASE_URL, { method: 'HEAD', cache: 'no-store' });
+        const dateHeader = res.headers.get('Date');
+        if (dateHeader) {
+          const t = Date.parse(dateHeader);
+          if (!isNaN(t)) return t;
+        }
+      } catch (e) {
+        console.warn('[skratica] getNetworkTime falló, usando reloj local', e);
+      }
+      return Date.now();
+    }
+
+    // ─────────────────────────────────────────────
     // PERSISTENCIA
     // ─────────────────────────────────────────────
     function getOrAssignLetter() {
@@ -1245,7 +1262,7 @@
     // ─────────────────────────────────────────────
     // PROCESAMIENTO DEL PARÁMETRO ?tile=
     // ─────────────────────────────────────────────
-    function processTileParam(encoded, myTeamKey, myMode) {
+    async function processTileParam(encoded, myTeamKey, myMode) {
       // Decodificar base64
       let payload;
       try {
@@ -1278,7 +1295,8 @@
       }
 
       // Validar timestamp (< 40 segundos)
-      const age = Date.now() - inTs;
+      const now = await getNetworkTime();
+      const age = now - inTs;
       if (age < 0 || age > 40000) {
         const secs = Math.round(Math.abs(age) / 1000);
         return {
@@ -1311,7 +1329,7 @@
       }
 
       // Asignar bonus (30% de probabilidad, magnitud según velocidad de escaneo)
-      const ageMs = Date.now() - inTs;
+      const ageMs = now - inTs;
       const bonus = Math.random() < 0.30 ? pickBonus(ageMs) : '1';
 
       return { ok: true, letter: inLetter, bonus };
@@ -1445,8 +1463,8 @@
           return;
         }
 
-        showConfirm(() => {
-          const timestamp = Date.now();
+        showConfirm(async () => {
+          const timestamp = await getNetworkTime();
           const payload   = `${entry.letter},${teamKey},${timestamp}`;
           const encoded   = btoa(payload);
           const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
@@ -1517,9 +1535,6 @@
         // Resetear el bonus de esa letra a '1' en skratica_word_bonus
         const allLetters = getWordLetters();
         const allBonuses = getWordBonuses();
-        // Encontrar el índice de la primera ocurrencia no ya reseteada de esta letra
-        // Buscamos la primera posición donde letter coincide y bonus !== '1'
-        // (puede haber varias ocurrencias, reseteamos solo la primera con bonus)
         let resetIdx = allLetters.findIndex((l, i) => l === entry.letter && allBonuses[i] !== '1');
         if (resetIdx === -1) resetIdx = allLetters.indexOf(entry.letter);
         if (resetIdx !== -1) {
@@ -1559,8 +1574,8 @@
         const letter    = nowPending[0];
         const entryObj  = LETTERS.find(l => l.letter === letter) || { letter, score: 0 };
 
-        showConfirm(() => {
-          const timestamp = Date.now();
+        showConfirm(async () => {
+          const timestamp = await getNetworkTime();
           const encoded   = btoa(`${letter},${teamKey},${timestamp}`);
           const url       = `${SHARE_BASE_URL}/?tile=${encoded}`;
           localStorage.setItem('skratica_surplus_url', url);
@@ -1588,7 +1603,7 @@
     // ─────────────────────────────────────────────
     // INIT
     // ─────────────────────────────────────────────
-    (function init() {
+    (async function init() {
       const myEntry   = getOrAssignLetter();
       const myTeamKey = getOrAssignTeam();
       const myMode    = getMode();
@@ -1735,7 +1750,7 @@
       history.replaceState(null, '', window.location.pathname);
 
       if (encoded) {
-        const result = processTileParam(encoded, myTeamKey, myMode);
+        const result = await processTileParam(encoded, myTeamKey, myMode);
 
         if (!result.ok) {
           let onClose;

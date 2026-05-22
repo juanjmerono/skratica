@@ -485,6 +485,23 @@
 
     const totalWeight = LETTERS.reduce((sum, l) => sum + l.weight, 0);
 
+    // ─────────────────────────────────────────────
+    // TIEMPO DE RED — evita diferencias de reloj entre dispositivos
+    // ─────────────────────────────────────────────
+    async function getNetworkTime() {
+      try {
+        const res = await fetch(SHARE_BASE_URL, { method: 'HEAD', cache: 'no-store' });
+        const dateHeader = res.headers.get('Date');
+        if (dateHeader) {
+          const t = Date.parse(dateHeader);
+          if (!isNaN(t)) return t;
+        }
+      } catch (e) {
+        console.warn('[skratica] getNetworkTime falló, usando reloj local', e);
+      }
+      return Date.now();
+    }
+
     function weightedRandom() {
       let rand = Math.random() * totalWeight;
       for (const entry of LETTERS) {
@@ -539,8 +556,7 @@
     // ─────────────────────────────────────────────
     // MOSTRAR PANEL QR
     // ─────────────────────────────────────────────
-    function showQR({ url, colorDark, boxClass, label, note, urgentClass, badgeEntry, teamClass, letterColor }) {
-      const timestamp = Date.now();
+    function showQR({ url, timestamp, colorDark, boxClass, label, note, urgentClass, badgeEntry, teamClass, letterColor }) {
       const expiresAt = timestamp + 30000;
 
       // Generar QR
@@ -594,13 +610,14 @@
     // ─────────────────────────────────────────────
     // GENERADORES
     // ─────────────────────────────────────────────
-    function generateResetQR() {
-      const timestamp = Date.now();
+    async function generateResetQR() {
+      const timestamp = await getNetworkTime();
       const encoded   = btoa(`reset,${timestamp}`);
       const url       = `${SHARE_BASE_URL}?reset=${encoded}`;
 
       showQR({
         url,
+        timestamp,
         colorDark:   '#000000',
         boxClass:    'type-reset',
         label:       'Escanea para resetear la partida',
@@ -611,15 +628,16 @@
       });
     }
 
-    function generateTileQR(teamKey) {
-      const entry    = weightedRandom();
-      const timestamp = Date.now();
-      const encoded  = btoa(`${entry.letter},${teamKey},${timestamp}`);
+    async function generateTileQR(teamKey) {
+      const entry     = weightedRandom();
+      const timestamp = await getNetworkTime();
+      const encoded   = btoa(`${entry.letter},${teamKey},${timestamp}`);
       const url      = `${SHARE_BASE_URL}?tile=${encoded}`;
       const teamConf = TEAMS[teamKey];
 
       showQR({
         url,
+        timestamp,
         colorDark:   teamConf.qrColor,
         boxClass:    teamConf.boxClass,
         label:       `Ficha para el equipo ${teamConf.label}`,
@@ -671,7 +689,7 @@
       document.getElementById('error-msg').textContent = '';
     });
 
-    document.getElementById('btn-reset').addEventListener('click',  generateResetQR);
+    document.getElementById('btn-reset').addEventListener('click',  () => generateResetQR());
     document.getElementById('btn-tile-a').addEventListener('click', () => generateTileQR('A'));
     document.getElementById('btn-tile-b').addEventListener('click', () => generateTileQR('B'));
     document.getElementById('btn-tile-c').addEventListener('click', () => generateTileQR('C'));
