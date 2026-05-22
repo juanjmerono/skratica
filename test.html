@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skratica — Admin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0f0f1a;
+      --accent: #7c6af7;
+      --text-muted: #a0a0c4;
+      --danger: #e05252;
+      --danger-glow: rgba(224, 82, 82, 0.45);
+      --red-color: #e05252;
+      --red-glow: rgba(224, 82, 82, 0.45);
+      --blue-color: #5278e0;
+      --blue-glow: rgba(82, 120, 224, 0.45);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      padding: 24px;
+    }
+
+    header { text-align: center; }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    header p {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+
+    /* ════════════════════════════
+       VISTA LOGIN
+    ════════════════════════════ */
+    #view-login {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 320px;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .lock-icon {
+      font-size: 3rem;
+      line-height: 1;
+    }
+
+    .login-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+
+    .password-input {
+      width: 100%;
+      background: #1e1e32;
+      border: 2px solid #3a3a5a;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      outline: none;
+      letter-spacing: 0.15em;
+      caret-color: var(--accent);
+      transition: border-color 0.2s;
+    }
+
+    .password-input:focus { border-color: var(--accent); }
+
+    .password-input.error {
+      border-color: var(--danger);
+      animation: shake 0.3s ease;
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(124,106,247,0.35);
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-login:hover  { background: #6a59e0; }
+    .btn-login:active { transform: translateY(1px); }
+
+    .error-msg {
+      font-size: 0.8rem;
+      color: var(--danger);
+      letter-spacing: 0.05em;
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    /* ════════════════════════════
+       VISTA ACCIONES (tras login)
+    ════════════════════════════ */
+    #view-actions {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 320px;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    #view-actions.active { display: flex; }
+
+    .actions-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .btn-action {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-action:hover  { opacity: 0.85; }
+    .btn-action:active { transform: translateY(1px); }
+
+    .btn-action.reset {
+      background: var(--danger);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--danger-glow);
+    }
+
+    .btn-action.team-a {
+      background: var(--red-color);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--red-glow);
+    }
+
+    .btn-action.team-b {
+      background: var(--blue-color);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--blue-glow);
+    }
+
+    .actions-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 4px 0;
+    }
+
+    /* ════════════════════════════
+       VISTA QR
+    ════════════════════════════ */
+    #view-qr {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    #view-qr.active { display: flex; }
+
+    .qr-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .qr-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 16px;
+      transition: box-shadow 0.3s;
+    }
+
+    .qr-box.type-reset {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--danger-glow);
+    }
+
+    .qr-box.type-a {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--red-glow);
+    }
+
+    .qr-box.type-b {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--blue-glow);
+    }
+
+    #qr-code canvas, #qr-code img {
+      width: 240px !important;
+      height: 240px !important;
+      display: block;
+    }
+
+    /* Ficha mini sobre el QR de letra */
+    .qr-tile-badge {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      padding: 6px 14px 8px;
+      gap: 2px;
+      margin-top: -4px;
+    }
+
+    .qr-tile-badge.visible { display: flex; }
+
+    .qr-tile-badge.team-a {
+      background: #fdf0f0;
+      border: 2px solid #e8c4c4;
+      color: #1a1a2e;
+    }
+
+    .qr-tile-badge.team-b {
+      background: #f0f3fd;
+      border: 2px solid #c4cce8;
+      color: #1a1a2e;
+    }
+
+    .badge-letter {
+      font-family: 'Georgia', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .badge-score {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #5a4fd1;
+      line-height: 1;
+    }
+
+    #qr-countdown {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: #c0c0d8;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+      text-align: center;
+    }
+
+    #qr-countdown.urgent-reset { color: var(--danger); }
+    #qr-countdown.urgent-a     { color: var(--red-color); }
+    #qr-countdown.urgent-b     { color: var(--blue-color); }
+
+    .qr-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      max-width: 280px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .btn-back {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid #3a3a5a;
+      border-radius: 12px;
+      padding: 10px 32px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .btn-back:hover { color: #fff; border-color: #6a6a8a; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Skratica</h1>
+    <p>Administración</p>
+  </header>
+
+  <!-- ── Vista: login ── -->
+  <div id="view-login">
+    <div class="lock-icon">🔒</div>
+    <div class="login-title">Introduce la contraseña de administrador</div>
+    <input
+      class="password-input"
+      id="password-input"
+      type="password"
+      autocomplete="off"
+      placeholder="••••••••"
+    />
+    <div class="error-msg" id="error-msg"></div>
+    <button class="btn-login" id="btn-login">Acceder</button>
+  </div>
+
+  <!-- ── Vista: panel de acciones ── -->
+  <div id="view-actions">
+    <div class="actions-title">Generar código QR</div>
+
+    <button class="btn-action team-a" id="btn-tile-a">
+      Letra aleatoria — Equipo Rojo
+    </button>
+    <button class="btn-action team-b" id="btn-tile-b">
+      Letra aleatoria — Equipo Azul
+    </button>
+
+    <div class="actions-divider"></div>
+
+    <button class="btn-action reset" id="btn-reset">
+      Reset de partida
+    </button>
+  </div>
+
+  <!-- ── Vista: QR generado ── -->
+  <div id="view-qr">
+    <div class="qr-label" id="qr-label">Escanea el código</div>
+    <div class="qr-box" id="qr-box">
+      <div id="qr-code"></div>
+    </div>
+    <div class="qr-tile-badge" id="qr-tile-badge">
+      <span class="badge-letter" id="badge-letter"></span>
+      <span class="badge-score"  id="badge-score"></span>
+    </div>
+    <div id="qr-countdown"></div>
+    <p class="qr-note" id="qr-note"></p>
+    <button class="btn-back" id="btn-back">Volver</button>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // URL BASE — debe coincidir con SHARE_BASE_URL de index.html
+    // ─────────────────────────────────────────────
+    const SHARE_BASE_URL = 'https://juanjmerono.github.io/skratica/';
+
+    // ─────────────────────────────────────────────
+    // HASH SHA-256 de la contraseña
+    // Para cambiar la contraseña, calcular sha256("nueva_clave") y actualizar aquí.
+    // ─────────────────────────────────────────────
+    const ADMIN_HASH = '844c46155585f412cb6ae197236ace200dd264cb5659ac9469383ba46afafd2d';
+
+    // ─────────────────────────────────────────────
+    // LETRAS (misma configuración que index.html)
+    // ─────────────────────────────────────────────
+    const LETTERS = [
+      { letter: 'A',  score: 1,  weight: 12 },
+      { letter: 'E',  score: 1,  weight: 12 },
+      { letter: 'O',  score: 1,  weight: 9  },
+      { letter: 'I',  score: 1,  weight: 6  },
+      { letter: 'S',  score: 1,  weight: 6  },
+      { letter: 'N',  score: 1,  weight: 5  },
+      { letter: 'R',  score: 1,  weight: 5  },
+      { letter: 'U',  score: 1,  weight: 5  },
+      { letter: 'D',  score: 2,  weight: 5  },
+      { letter: 'L',  score: 1,  weight: 4  },
+      { letter: 'T',  score: 1,  weight: 4  },
+      { letter: 'C',  score: 3,  weight: 4  },
+      { letter: 'M',  score: 3,  weight: 3  },
+      { letter: 'P',  score: 3,  weight: 2  },
+      { letter: 'B',  score: 3,  weight: 2  },
+      { letter: 'G',  score: 2,  weight: 2  },
+      { letter: 'H',  score: 4,  weight: 2  },
+      { letter: 'F',  score: 4,  weight: 1  },
+      { letter: 'V',  score: 4,  weight: 1  },
+      { letter: 'Y',  score: 4,  weight: 1  },
+      { letter: 'Q',  score: 5,  weight: 1  },
+      { letter: 'J',  score: 8,  weight: 1  },
+      { letter: 'Ñ',  score: 8,  weight: 1  },
+      { letter: 'X',  score: 8,  weight: 1  },
+      { letter: 'Z',  score: 10, weight: 1  },
+    ];
+
+    const TEAMS = {
+      A: { label: 'Rojo', qrColor: '#c02020' },
+      B: { label: 'Azul', qrColor: '#2040b0' },
+    };
+
+    const totalWeight = LETTERS.reduce((sum, l) => sum + l.weight, 0);
+
+    function weightedRandom() {
+      let rand = Math.random() * totalWeight;
+      for (const entry of LETTERS) {
+        rand -= entry.weight;
+        if (rand <= 0) return entry;
+      }
+      return LETTERS[LETTERS.length - 1];
+    }
+
+    // ─────────────────────────────────────────────
+    // SHA-256 con Web Crypto API nativa
+    // ─────────────────────────────────────────────
+    async function sha256(message) {
+      const msgBuffer  = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray  = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // ─────────────────────────────────────────────
+    // COUNTDOWN
+    // ─────────────────────────────────────────────
+    let _countdownInterval = null;
+
+    function startCountdown(expiresAt, urgentClass, onExpired) {
+      const el = document.getElementById('qr-countdown');
+      if (_countdownInterval) clearInterval(_countdownInterval);
+      el.classList.remove('urgent-reset', 'urgent-a', 'urgent-b');
+
+      function tick() {
+        const remaining = Math.max(0, expiresAt - Date.now());
+        const secs = Math.ceil(remaining / 1000);
+
+        if (remaining <= 0) {
+          el.textContent = 'Caducado';
+          el.classList.add(urgentClass);
+          clearInterval(_countdownInterval);
+          _countdownInterval = null;
+          onExpired();
+          return;
+        }
+
+        el.textContent = `0:${String(secs).padStart(2, '0')}`;
+        if (secs <= 10) el.classList.add(urgentClass);
+        else            el.classList.remove(urgentClass);
+      }
+
+      tick();
+      _countdownInterval = setInterval(tick, 500);
+    }
+
+    // ─────────────────────────────────────────────
+    // MOSTRAR PANEL QR
+    // ─────────────────────────────────────────────
+    function showQR({ url, colorDark, boxClass, label, note, urgentClass, badgeEntry, teamClass }) {
+      const timestamp = Date.now();
+      const expiresAt = timestamp + 30000;
+
+      // Generar QR
+      const el = document.getElementById('qr-code');
+      el.innerHTML = '';
+      new QRCode(el, {
+        text:         url,
+        width:        240,
+        height:       240,
+        colorDark:    colorDark,
+        colorLight:   '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+
+      // Configurar aspecto del panel
+      const box = document.getElementById('qr-box');
+      box.className = `qr-box ${boxClass}`;
+
+      document.getElementById('qr-label').textContent = label;
+      document.getElementById('qr-note').innerHTML    = note;
+
+      // Ficha de letra (solo para tiles de equipo)
+      const badge = document.getElementById('qr-tile-badge');
+      if (badgeEntry) {
+        badge.className = `qr-tile-badge visible ${teamClass}`;
+        document.getElementById('badge-letter').textContent = badgeEntry.letter;
+        document.getElementById('badge-score').textContent  = `${badgeEntry.score} pts`;
+      } else {
+        badge.className = 'qr-tile-badge';
+      }
+
+      // Mostrar vista QR
+      document.getElementById('view-actions').classList.remove('active');
+      document.getElementById('view-qr').classList.add('active');
+
+      // Countdown: al caducar volver a acciones
+      startCountdown(expiresAt, urgentClass, () => {
+        setTimeout(backToActions, 1200);
+      });
+    }
+
+    function backToActions() {
+      if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
+      document.getElementById('view-qr').classList.remove('active');
+      document.getElementById('qr-countdown').classList.remove('urgent-reset', 'urgent-a', 'urgent-b');
+      document.getElementById('view-actions').classList.add('active');
+    }
+
+    // ─────────────────────────────────────────────
+    // GENERADORES
+    // ─────────────────────────────────────────────
+    function generateResetQR() {
+      const timestamp = Date.now();
+      const encoded   = btoa(`reset,${timestamp}`);
+      const url       = `${SHARE_BASE_URL}?reset=${encoded}`;
+
+      showQR({
+        url,
+        colorDark:   '#b02020',
+        boxClass:    'type-reset',
+        label:       'Escanea para resetear la partida',
+        note:        'Este código es válido <strong style="color:var(--danger)">30 segundos</strong>.<br>Al escanearlo se borrará el progreso del jugador.',
+        urgentClass: 'urgent-reset',
+        badgeEntry:  null,
+        teamClass:   '',
+      });
+    }
+
+    function generateTileQR(teamKey) {
+      const entry     = weightedRandom();
+      const timestamp = Date.now();
+      const encoded   = btoa(`${entry.letter},${teamKey},${timestamp}`);
+      const url       = `${SHARE_BASE_URL}?tile=${encoded}`;
+      const teamConf  = TEAMS[teamKey];
+      const isA       = teamKey === 'A';
+
+      showQR({
+        url,
+        colorDark:   teamConf.qrColor,
+        boxClass:    isA ? 'type-a' : 'type-b',
+        label:       `Ficha para el equipo ${teamConf.label}`,
+        note:        `Este código es válido <strong style="color:${isA ? 'var(--red-color)' : 'var(--blue-color)'}">30 segundos</strong>.<br>Solo puede escanearlo un miembro del equipo ${teamConf.label}.`,
+        urgentClass: isA ? 'urgent-a' : 'urgent-b',
+        badgeEntry:  entry,
+        teamClass:   isA ? 'team-a' : 'team-b',
+      });
+    }
+
+    // ─────────────────────────────────────────────
+    // EVENTOS
+    // ─────────────────────────────────────────────
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const input    = document.getElementById('password-input');
+      const errorEl  = document.getElementById('error-msg');
+      const password = input.value;
+
+      if (!password) {
+        errorEl.textContent = 'Introduce la contraseña.';
+        return;
+      }
+
+      const hash = await sha256(password);
+
+      if (hash !== ADMIN_HASH) {
+        errorEl.textContent = 'Contraseña incorrecta.';
+        input.classList.remove('error');
+        void input.offsetWidth; // re-trigger animación
+        input.classList.add('error');
+        input.value = '';
+        return;
+      }
+
+      // Login correcto: mostrar panel de acciones
+      errorEl.textContent = '';
+      input.classList.remove('error');
+      document.getElementById('view-login').style.display = 'none';
+      document.getElementById('view-actions').classList.add('active');
+    });
+
+    document.getElementById('password-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btn-login').click();
+    });
+
+    document.getElementById('password-input').addEventListener('input', () => {
+      document.getElementById('password-input').classList.remove('error');
+      document.getElementById('error-msg').textContent = '';
+    });
+
+    document.getElementById('btn-reset').addEventListener('click',  generateResetQR);
+    document.getElementById('btn-tile-a').addEventListener('click', () => generateTileQR('A'));
+    document.getElementById('btn-tile-b').addEventListener('click', () => generateTileQR('B'));
+    document.getElementById('btn-back').addEventListener('click',   backToActions);
+  </script>
+</body>
+</html>
