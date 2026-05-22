@@ -300,6 +300,11 @@
       box-shadow: none;
     }
 
+    .mini-tile.shared {
+      opacity: 0.1 !important;
+      box-shadow: none;
+    }
+
     .mini-tile-letter {
       font-size: min(9vmin, 42px);
       font-weight: 700;
@@ -344,6 +349,48 @@
       opacity: 0.3;
       box-shadow: none;
     }
+
+    /* Fichas sobrantes ya compartidas */
+    .mini-tile.shared {
+      opacity: 0.1;
+      box-shadow: none;
+    }
+
+    /* Botón compartir sobrantes */
+    .btn-surplus {
+      background: transparent;
+      color: var(--team-color);
+      border: 2px solid var(--team-color);
+      border-radius: 12px;
+      padding: 12px 32px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.1s;
+    }
+
+    .btn-surplus:hover  { background: var(--team-color); color: #fff; }
+    .btn-surplus:active { transform: translateY(1px); }
+
+    /* Botón volver en panel QR sobrante */
+    #btn-surplus-back {
+      display: none;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid #3a3a5a;
+      border-radius: 12px;
+      padding: 10px 32px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    #btn-surplus-back.visible { display: block; }
+    #btn-surplus-back:hover   { color: #fff; border-color: #6a6a8a; }
 
     /* Texto de palabra en modo palabra */
     .word-preview {
@@ -579,6 +626,7 @@
         </div>
       </div>
       <div id="qr-countdown"></div>
+      <button id="btn-surplus-back">Volver</button>
     </div>
     <div class="hints">
       <span class="hint hint--tap" id="hint-tap">
@@ -635,6 +683,7 @@
       <div class="score-label">puntos</div>
     </div>
     <p class="final-team-msg" id="final-team-msg"></p>
+    <button class="btn-surplus" id="btn-surplus" style="display:none">Compartir letras sobrantes</button>
   </div>
 
   <!-- ── Diálogo confirmación compartir ── -->
@@ -931,13 +980,34 @@
         ? (() => { const p = [...letters]; usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i,1); }); return p; })()
         : [];
 
+      // Letras sobrantes ya compartidas
+      const sharedAlready  = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
+      // Copia mutable para marcar compartidas (respeta multiplicidades)
+      const sharedPool     = [...sharedAlready];
+      const pendingLetters = (() => {
+        const pool = [...sharedPool];
+        return unusedLetters.filter(l => {
+          const i = pool.indexOf(l);
+          if (i !== -1) { pool.splice(i, 1); return false; }
+          return true;
+        });
+      })();
+
       const row = document.getElementById('tiles-row-done');
       row.innerHTML = '';
-      // Mostrar fichas usadas primero, luego no usadas con opacidad
+      // Fichas usadas
       usedLetters.forEach(l => row.appendChild(buildMiniTile(l)));
+      // Fichas sobrantes: pendientes (tenues) o ya compartidas (muy tenues)
+      const sharedMark = [...sharedAlready];
       unusedLetters.forEach(l => {
         const t = buildMiniTile(l);
-        t.classList.add('unused');
+        const si = sharedMark.indexOf(l);
+        if (si !== -1) {
+          sharedMark.splice(si, 1);
+          t.classList.add('shared');
+        } else {
+          t.classList.add('unused');
+        }
         row.appendChild(t);
       });
 
@@ -948,6 +1018,10 @@
       document.getElementById('team-label-done').textContent   = teamConf.label;
       document.getElementById('final-team-msg').innerHTML      =
         `${score} puntos para el equipo <strong>${teamConf.label}</strong>`;
+
+      // Mostrar botón sobrantes solo si quedan pendientes
+      const btnSurplus = document.getElementById('btn-surplus');
+      btnSurplus.style.display = pendingLetters.length > 0 ? '' : 'none';
 
       document.getElementById('view-done').classList.add('active');
     }
@@ -1098,7 +1172,7 @@
       _countdownInterval = setInterval(tick, 500);
     }
 
-    function showConfirm(onConfirm) {
+    function showConfirm(onConfirm, onCancel) {
       document.getElementById('view-normal').style.display = 'none';
       document.getElementById('view-confirm').classList.add('active');
 
@@ -1120,7 +1194,11 @@
       function onNo() {
         cleanup();
         document.getElementById('view-confirm').classList.remove('active');
-        document.getElementById('view-normal').style.display = '';
+        if (onCancel) {
+          onCancel();
+        } else {
+          document.getElementById('view-normal').style.display = '';
+        }
       }
 
       yes.addEventListener('click', onYes);
@@ -1157,6 +1235,117 @@
           renderQR(shareUrl, teamConf);
           setMode('sharing');
           showQRPanel(entry);
+        });
+      });
+    }
+
+    // ─────────────────────────────────────────────
+    // COMPARTIR LETRAS SOBRANTES
+    // ─────────────────────────────────────────────
+
+    function getPendingSurplus(letters) {
+      const confirmedUsed = localStorage.getItem('skratica_word_used');
+      const usedLetters   = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
+      const unusedLetters = (() => {
+        const p = [...letters];
+        usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i, 1); });
+        return p;
+      })();
+      const sharedAlready = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
+      const pool = [...sharedAlready];
+      return unusedLetters.filter(l => {
+        const i = pool.indexOf(l);
+        if (i !== -1) { pool.splice(i, 1); return false; }
+        return true;
+      });
+    }
+
+    function showSurplusQRPanel(entry, teamConf, teamKey, letters) {
+      // Ocultar vista done y ficha propia, mostrar panel QR
+      document.getElementById('view-done').classList.remove('active');
+      document.getElementById('tile-wrapper').style.display = 'none';
+      document.getElementById('qr-hint-letter').textContent = entry.letter;
+      document.getElementById('qr-hint-score').textContent  = entry.score;
+      document.getElementById('qr-panel').classList.add('visible');
+
+      // Arrancar countdown (solo visual, no auto-vuelve)
+      const url     = localStorage.getItem('skratica_surplus_url');
+      const expiry  = (() => {
+        try {
+          const encoded = new URL(url).searchParams.get('tile');
+          const ts = parseInt(atob(encoded).split(',')[2], 10);
+          return isNaN(ts) ? null : ts + 30000;
+        } catch { return null; }
+      })();
+      if (expiry) startCountdown(expiry);
+
+      // Mostrar botón volver
+      const btnBack = document.getElementById('btn-surplus-back');
+      btnBack.classList.add('visible');
+
+      // Al pulsar volver: marcar letra como compartida y volver a done
+      const onBack = () => {
+        btnBack.classList.remove('visible');
+        btnBack.removeEventListener('click', onBack);
+
+        // Marcar letra como compartida
+        const shared = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
+        shared.push(entry.letter);
+        localStorage.setItem('skratica_surplus_shared', JSON.stringify(shared));
+        localStorage.removeItem('skratica_surplus_url');
+
+        // Parar countdown
+        if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
+
+        // Ocultar panel QR, asegurar que tile-wrapper sigue oculto, volver a done
+        document.getElementById('qr-panel').classList.remove('visible');
+        document.getElementById('tile-wrapper').style.display = 'none';
+        showDoneView(teamConf, letters);
+        initSurplusShare(teamKey, teamConf, letters);
+      };
+      btnBack.addEventListener('click', onBack);
+    }
+
+    function initSurplusShare(teamKey, teamConf, letters) {
+      const btn = document.getElementById('btn-surplus');
+
+      // Clonar el botón para limpiar listeners previos
+      const fresh = btn.cloneNode(true);
+      btn.parentNode.replaceChild(fresh, btn);
+
+      const pending = getPendingSurplus(letters);
+      fresh.style.display = pending.length > 0 ? '' : 'none';
+      if (pending.length === 0) return;
+
+      fresh.addEventListener('click', () => {
+        const nowPending = getPendingSurplus(letters);
+        if (nowPending.length === 0) { fresh.style.display = 'none'; return; }
+
+        const letter    = nowPending[0];
+        const entryObj  = LETTERS.find(l => l.letter === letter) || { letter, score: 0 };
+
+        showConfirm(() => {
+          const timestamp = Date.now();
+          const encoded   = btoa(`${letter},${teamKey},${timestamp}`);
+          const url       = `${SHARE_BASE_URL}/?tile=${encoded}`;
+          localStorage.setItem('skratica_surplus_url', url);
+
+          // Reutilizar renderQR pero con qrCode limpio
+          const el = document.getElementById('qr-code');
+          el.innerHTML = '';
+          new QRCode(el, {
+            text:         url,
+            width:        316,
+            height:       316,
+            colorDark:    teamConf.qrColor,
+            colorLight:   '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H,
+          });
+
+          showSurplusQRPanel(entryObj, teamConf, teamKey, letters);
+        }, () => {
+          // Cancelar: volver a done sin mostrar view-normal
+          document.getElementById('view-done').classList.add('active');
         });
       });
     }
@@ -1262,6 +1451,7 @@
           if (typeof WORDS_ES === 'undefined') {
             setMode('done');
             showDoneView(teamConf, letters);
+            initSurplusShare(myTeamKey, teamConf, letters);
             return;
           }
 
@@ -1277,6 +1467,7 @@
           setMode('done');
           localStorage.setItem('skratica_word_final', wordForDict);
           showDoneView(teamConf, letters);
+          initSurplusShare(myTeamKey, teamConf, letters);
         }
       });
 
@@ -1306,7 +1497,7 @@
           // Borrar todo el localStorage de Skratica y recargar limpio
           ['skratica_letter','skratica_team','skratica_mode','skratica_word',
            'skratica_word_order','skratica_word_used','skratica_word_final',
-           'skratica_share_url'].forEach(k => localStorage.removeItem(k));
+           'skratica_share_url','skratica_surplus_shared','skratica_surplus_url'].forEach(k => localStorage.removeItem(k));
           location.reload();
           return;
         } else {
@@ -1379,6 +1570,7 @@
       if (myMode === 'done') {
         const letters = getWordLetters();
         showDoneView(teamConf, letters);
+        initSurplusShare(myTeamKey, teamConf, letters);
         return;
       }
 

@@ -429,7 +429,7 @@
     </div>
     <div id="qr-countdown"></div>
     <p class="qr-note" id="qr-note"></p>
-    <a id="qr-direct-link" href="#" target="_blank" rel="noopener">Abrir enlace directamente</a>
+    <a id="qr-direct-link" href="#" onclick="window.open(this.href,'skratica_preview'); return false;" rel="noopener">Abrir enlace directamente</a>
     <button class="btn-back" id="btn-back">Volver</button>
   </div>
 
@@ -561,7 +561,7 @@
 
       document.getElementById('qr-label').textContent = label;
       document.getElementById('qr-note').innerHTML    = note;
-      document.getElementById('qr-direct-link').href  = url;
+      document.getElementById('qr-direct-link').href  = `index.html${url.substring(url.lastIndexOf('/')+1)}`;
 
       // Ficha hint superpuesta en el centro del QR (solo para tiles de equipo)
       const hint = document.getElementById('qr-tile-hint');
