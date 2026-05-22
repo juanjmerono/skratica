@@ -1,973 +1,1367 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBERPAELLAS - Juego de Ciberseguridad - ATICA</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0a0a0f;
-            color: #00ff41;
-            font-family: 'Share Tech Mono', monospace;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.05;
-            background:
-                linear-gradient(90deg, transparent 49%, #00ff41 50%, transparent 51%) 0 0 / 50px 50px,
-                linear-gradient(0deg, transparent 49%, #00ff41 50%, transparent 51%) 0 0 / 50px 50px;
-            animation: gridMove 20s linear infinite;
-        }
-
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
-        }
-
-        .scan-line {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #00ff41, transparent);
-            animation: scan 4s linear infinite;
-            z-index: 1000;
-            pointer-events: none;
-            opacity: 0.3;
-        }
-
-        @keyframes scan {
-            0% { top: -3px; }
-            100% { top: 100vh; }
-        }
-
-        header {
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 1px solid #00ff4133;
-            position: relative;
-        }
-
-        header::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #00ff41, transparent);
-        }
-
-        .logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 900;
-            letter-spacing: 8px;
-            text-shadow: 0 0 10px #00ff41, 0 0 40px #00ff4155;
-            animation: glitch 3s infinite;
-        }
-
-        .logo span {
-            color: #ff0040;
-            text-shadow: 0 0 10px #ff0040, 0 0 40px #ff004055;
-        }
-
-        @keyframes glitch {
-            0%, 90%, 100% { transform: translate(0); }
-            92% { transform: translate(-2px, 1px); }
-            94% { transform: translate(2px, -1px); }
-            96% { transform: translate(-1px, -2px); }
-            98% { transform: translate(1px, 2px); }
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            color: #00ff4199;
-            margin-top: 10px;
-            letter-spacing: 4px;
-        }
-
-        .terminal {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .terminal-window {
-            background: #0d0d15;
-            border: 1px solid #00ff4144;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 0 30px #00ff4111, inset 0 0 50px #00000088;
-        }
-
-        .terminal-header {
-            background: #1a1a2e;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid #00ff4122;
-            position: relative;
-        }
-
-        .terminal-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .dot-red { background: #ff5f56; }
-        .dot-yellow { background: #ffbd2e; }
-        .dot-green { background: #27c93f; }
-
-        .terminal-title {
-            margin-left: 10px;
-            color: #00ff4188;
-            font-size: 0.85rem;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            min-width: 0;
-        }
-
-        .terminal-body {
-            padding: 24px;
-        }
-
-        .prompt {
-            color: #ff0040;
-        }
-
-        .command {
-            color: #00ff41;
-        }
-
-        .output {
-            color: #00ff4199;
-            margin: 10px 0;
-            line-height: 1.8;
-            white-space: pre-wrap;
-        }
-
-        .highlight {
-            color: #00ffff;
-            text-shadow: 0 0 5px #00ffff55;
-        }
-
-        .warning {
-            color: #ff0040;
-            text-shadow: 0 0 5px #ff004055;
-        }
-
-        .section-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            margin: 40px 0 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #00ff4133;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section-title::before {
-            content: '>';
-            color: #ff0040;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-        .game-rules {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .rule-card {
-            background: #0d0d15;
-            border: 1px solid #00ff4133;
-            padding: 24px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .rule-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #00ff41, transparent);
-            transition: left 0.5s ease;
-        }
-
-        .rule-card:hover::before {
-            left: 100%;
-        }
-
-        .rule-card:hover {
-            border-color: #00ff4188;
-            box-shadow: 0 0 20px #00ff4122;
-            transform: translateY(-2px);
-        }
-
-        .rule-icon {
-            font-size: 2rem;
-            margin-bottom: 12px;
-        }
-
-        .rule-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            margin-bottom: 10px;
-            color: #00ffff;
-        }
-
-        .rule-desc {
-            color: #00ff4188;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        .threat-level {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 10px 0;
-        }
-
-        .threat-bar {
-            flex: 1;
-            height: 8px;
-            background: #1a1a2e;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .threat-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 1s ease;
-        }
-
-        .threat-low { width: 25%; background: #27c93f; }
-        .threat-medium { width: 50%; background: #ffbd2e; }
-        .threat-high { width: 75%; background: #ff6b35; }
-        .threat-critical { width: 100%; background: #ff0040; animation: pulse 1s infinite; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            margin: 30px 0;
-        }
-
-        .stat-box {
-            background: #0d0d15;
-            border: 1px solid #00ff4133;
-            padding: 20px;
-            text-align: center;
-            border-radius: 4px;
-        }
-
-        .stat-value {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff55;
-        }
-
-        .stat-label {
-            color: #00ff4166;
-            font-size: 0.75rem;
-            margin-top: 8px;
-            letter-spacing: 2px;
-        }
-
-        .ascii-art {
-            color: #00ff4155;
-            font-size: 0.7rem;
-            line-height: 1.2;
-            text-align: center;
-            margin: 30px 0;
-            white-space: pre;
-            overflow-x: auto;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 14px 32px;
-            background: transparent;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            letter-spacing: 3px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            margin: 20px 10px;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, #00ff4133, transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            background: #00ff4122;
-            box-shadow: 0 0 20px #00ff4144;
-            text-shadow: 0 0 10px #00ff41;
-        }
-
-        .btn-danger {
-            border-color: #ff0040;
-            color: #ff0040;
-        }
-
-        .btn-danger:hover {
-            background: #ff004022;
-            box-shadow: 0 0 20px #ff004044;
-            text-shadow: 0 0 10px #ff0040;
-        }
-
-        .levels-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        .levels-table th,
-        .levels-table td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid #00ff4122;
-        }
-
-        .levels-table th {
-            color: #00ffff;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            background: #0d0d15;
-        }
-
-        .levels-table td {
-            color: #00ff4188;
-        }
-
-        .levels-table tr:hover td {
-            background: #00ff4111;
-            color: #00ff41;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 3px;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-        }
-
-        .badge-easy { background: #27c93f33; color: #27c93f; border: 1px solid #27c93f55; }
-        .badge-medium { background: #ffbd2e33; color: #ffbd2e; border: 1px solid #ffbd2e55; }
-        .badge-hard { background: #ff004033; color: #ff0040; border: 1px solid #ff004055; }
-
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            border-top: 1px solid #00ff4122;
-            color: #00ff4144;
-            font-size: 0.8rem;
-        }
-
-        .typing {
-            display: inline-block;
-            border-right: 2px solid #00ff41;
-            animation: cursor 0.8s infinite;
-        }
-
-        @keyframes cursor {
-            0%, 50% { border-color: #00ff41; }
-            51%, 100% { border-color: transparent; }
-        }
-
-        @media (max-width: 768px) {
-            .logo {
-                font-size: 2rem;
-                letter-spacing: 4px;
-            }
-
-            .game-rules {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            #current-input {
-                display: none;
-            }
-
-            .typing {
-                display: none;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skratica</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="words-es.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0f0f1a;
+      --accent: #7c6af7;
+      --tile-bg: #f5f0e8;
+      --tile-border: #e0d8c8;
+      --tile-text: #1a1a2e;
+      --text-muted: #a0a0c4;
+      --team-color: #a0a0c4;
+      --team-tile-bg: #f5f0e8;
+      --team-tile-border: #e0d8c8;
+      --team-glow: rgba(136, 136, 170, 0.0);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 24px;
+    }
+
+    header { text-align: center; }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ══════════════════════════════
+       VISTA NORMAL — ficha grande
+    ══════════════════════════════ */
+    #view-normal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .tile-wrapper {
+      width: min(72vmin, 380px);
+      height: min(72vmin, 380px);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .tile {
+      position: absolute;
+      inset: 0;
+      background: var(--team-tile-bg);
+      border: 3px solid var(--team-tile-border);
+      border-radius: 24px;
+      box-shadow:
+        0 4px 0 #c8bfa8,
+        0 8px 0 #b8af98,
+        0 10px 24px rgba(0,0,0,0.6),
+        0 0 40px var(--team-glow),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .tile.hidden { opacity: 0; pointer-events: none; }
+
+    .tile-letter {
+      font-size: min(52vmin, 270px);
+      font-weight: 700;
+      color: var(--tile-text);
+      line-height: 1;
+      font-family: 'Georgia', serif;
+    }
+
+    .tile-score {
+      position: absolute;
+      bottom: min(3.5vmin, 18px);
+      right: min(4vmin, 20px);
+      font-size: min(7vmin, 36px);
+      font-weight: 700;
+      color: #5a4fd1;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1;
+    }
+
+    .qr-panel {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      border: 3px solid var(--team-tile-border);
+      border-radius: 24px;
+      box-shadow:
+        0 4px 0 #c8bfa8,
+        0 8px 0 #b8af98,
+        0 10px 24px rgba(0,0,0,0.6),
+        0 0 40px var(--team-glow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .qr-tile-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width:  clamp(48px, 14vmin, 68px);
+      height: clamp(48px, 14vmin, 68px);
+      background: #f5efe0;
+      border: 2px solid var(--team-tile-border);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 3px #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .qr-tile-hint .qh-letter {
+      font-family: 'Segoe UI', sans-serif;
+      font-size: clamp(22px, 7vmin, 36px);
+      font-weight: 900;
+      color: #3a3020;
+      line-height: 1;
+    }
+    .qr-tile-hint .qh-score {
+      font-size: clamp(8px, 2vmin, 11px);
+      font-weight: 700;
+      color: #8a7a60;
+      line-height: 1;
+    }
+
+    .qr-panel.visible { opacity: 1; pointer-events: auto; }
+
+    #qr-countdown {
+      display: none;
+      text-align: center;
+      font-size: clamp(0.95rem, 3.5vmin, 1.25rem);
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: #c0c0d8;
+      transition: color 0.3s;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    #qr-countdown.visible { display: block; }
+    #qr-countdown.urgent  { color: #e05252; }
+
+    #qr-code canvas, #qr-code img {
+      width: min(52vmin, 260px) !important;
+      height: min(52vmin, 260px) !important;
+    }
+
+    .hints {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hint {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: min(3vmin, 14px);
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .hint svg {
+      flex-shrink: 0;
+      opacity: 0.55;
+      width: min(3.8vmin, 17px);
+      height: min(3.8vmin, 17px);
+    }
+
+    .hint--tap {
+      color: #c4c4e8;
+      font-weight: 500;
+    }
+
+    .hint--scan {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: min(2.7vmin, 12px);
+    }
+
+    .hints-divider {
+      width: 32px;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 0 auto;
+    }
+
+    .team-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .team-heading {
+      font-size: min(3vmin, 14px);
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .team-name {
+      font-size: min(14vmin, 72px);
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--team-color);
+      text-shadow: 0 0 40px var(--team-glow), 0 0 80px var(--team-glow);
+      line-height: 1;
+    }
+
+    /* ══════════════════════════════
+       VISTA PALABRA
+    ══════════════════════════════ */
+    #view-word {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+      width: 100%;
+      max-width: 700px;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    #view-word.active { display: flex; }
+
+    /* Fila de fichas pequeñas */
+    .tiles-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .mini-tile {
+      width: min(13vmin, 64px);
+      height: min(13vmin, 64px);
+      position: relative;
+      background: var(--team-tile-bg);
+      border: 2px solid var(--team-tile-border);
+      border-radius: 10px;
+      box-shadow:
+        0 2px 0 #c8bfa8,
+        0 4px 0 #b8af98,
+        0 5px 10px rgba(0,0,0,0.5),
+        0 0 16px var(--team-glow),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: opacity 0.3s ease;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .mini-tile.unused {
+      opacity: 0.3 !important;
+      box-shadow: none;
+    }
+
+    .mini-tile-letter {
+      font-size: min(9vmin, 42px);
+      font-weight: 700;
+      color: var(--tile-text);
+      line-height: 1;
+      font-family: 'Georgia', serif;
+    }
+
+    .mini-tile-score {
+      position: absolute;
+      bottom: 3px;
+      right: 5px;
+      font-size: min(2.8vmin, 12px);
+      font-weight: 700;
+      color: #5a4fd1;
+      line-height: 1;
+    }
+
+    /* Puntuación parcial */
+    .score-display {
+      text-align: center;
+    }
+
+    .score-display .score-value {
+      font-size: min(10vmin, 52px);
+      font-weight: 900;
+      color: var(--team-color);
+      line-height: 1;
+      text-shadow: 0 0 30px var(--team-glow);
+    }
+
+    .score-display .score-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Fichas no usadas */
+    .mini-tile.unused {
+      opacity: 0.3;
+      box-shadow: none;
+    }
+
+    /* Texto de palabra en modo palabra */
+    .word-preview {
+      font-size: min(9vmin, 46px);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--team-color);
+      text-shadow: 0 0 30px var(--team-glow);
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    /* Input de reordenación */
+    .word-input {
+      display: none;
+      width: min(90vw, 420px);
+      background: #1e1e32;
+      border: 2px solid var(--team-color);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: min(7vmin, 32px);
+      font-weight: 700;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #fff;
+      text-align: center;
+      outline: none;
+      box-shadow: 0 0 16px var(--team-glow);
+      caret-color: var(--team-color);
+    }
+
+    .word-input.visible { display: block; }
+
+    .word-input::placeholder {
+      color: #6a6a8a;
+      font-size: 0.6em;
+      letter-spacing: 0.1em;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .btn-validate {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 40px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(124,106,247,0.35);
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-validate:hover { background: #6a59e0; }
+    .btn-validate:active { transform: translateY(1px); }
+
+    /* ══════════════════════════════
+       VISTA DONE — palabra validada
+    ══════════════════════════════ */
+    #view-done {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      width: 100%;
+      max-width: 700px;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    #view-done.active { display: flex; }
+
+    .word-display {
+      font-size: min(10vmin, 52px);
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--team-color);
+      text-shadow: 0 0 40px var(--team-glow);
+    }
+
+    .final-score {
+      text-align: center;
+    }
+
+    .final-score .score-value {
+      font-size: min(18vmin, 90px);
+      font-weight: 900;
+      color: var(--team-color);
+      line-height: 1;
+      text-shadow: 0 0 50px var(--team-glow), 0 0 100px var(--team-glow);
+    }
+
+    .final-score .score-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .final-team-msg {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    .final-team-msg strong {
+      color: var(--team-color);
+      font-weight: 700;
+    }
+
+    /* ══════════════════════════════
+       VISTA ERROR
+    ══════════════════════════════ */
+    #view-error {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      max-width: 360px;
+      text-align: center;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    #view-error.active { display: flex; }
+
+    #view-confirm {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      max-width: 340px;
+      text-align: center;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    #view-confirm.active { display: flex; }
+
+    .confirm-icon {
+      font-size: 2.6rem;
+      line-height: 1;
+    }
+
+    .confirm-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f0c060;
+    }
+
+    .confirm-msg {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-confirm-yes, .btn-confirm-no {
+      flex: 1;
+      padding: 12px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn-confirm-yes {
+      background: var(--team-tile-border);
+      color: #fff;
+    }
+
+    .btn-confirm-no {
+      background: #2a2520;
+      color: var(--text-muted);
+      border: 1px solid #3a3530;
+    }
+
+    .btn-confirm-yes:hover, .btn-confirm-no:hover { opacity: 0.85; }
+    .btn-confirm-yes:active, .btn-confirm-no:active { transform: translateY(1px); }
+
+    .error-icon {
+      font-size: 3rem;
+      line-height: 1;
+      cursor: pointer;
+      color: #e05252;
+      transition: transform 0.15s;
+    }
+
+    .error-icon:hover { transform: scale(1.15); }
+
+    .error-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e05252;
+    }
+
+    .error-msg {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-    <div class="matrix-bg"></div>
-    <div class="scan-line"></div>
 
-    <header>
-        <div class="logo">CYBER<span id="logo-span">PAELLAS</span></div>
-        <div id="subtitle" class="subtitle">[ <span class="warning">COMPROMETE</span> O <span class="highlight">REFUERZA</span> LA SEGURIDAD DE ATICA ]</div>
-    </header>
+  <header><h1>Skratica</h1></header>
 
-    <div class="terminal">
-        <div class="terminal-window">
-            <div class="terminal-header">
-                <div class="terminal-dot dot-red"></div>
-                <div class="terminal-dot dot-yellow"></div>
-                <div class="terminal-dot dot-green"></div>
-                <span id="terminal-title" class="terminal-title">root@cyberpaellas:~/game-info</span>
-            </div>
-            <div class="terminal-body">
-                <p><span id="terminal-prompt" class="prompt">root@cyberpaellas:~$</span> <span class="command"><span id="terminal-command">cat README.md</span></span></p>
-                <p id="terminal-output" class="output">Mientras disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de la ATICA.
-
-Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.
-
-Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.</p>
-            </div>
+  <!-- ── Vista normal (ficha propia) ── -->
+  <div id="view-normal">
+    <div class="tile-wrapper" id="tile-wrapper">
+      <div class="tile" id="tile">
+        <span class="tile-letter" id="tile-letter"></span>
+        <span class="tile-score"  id="tile-score"></span>
+      </div>
+      <div class="qr-panel" id="qr-panel">
+        <div id="qr-code"></div>
+        <div class="qr-tile-hint">
+          <span class="qh-letter" id="qr-hint-letter"></span>
+          <span class="qh-score"  id="qr-hint-score"></span>
         </div>
-
-        <h2 id="section-objective" class="section-title">OBJETIVO DEL JUEGO</h2>
-        <div class="terminal-window">
-            <div class="terminal-body">
-                <p id="objectives-output" class="output"><span class="prompt">&gt;</span> Inicia el juego para descubrir a qué equipo perteneces <span class="warning">EVIL</span> o <span class="highlight">SOC</span>.
-<span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.</p>
-            </div>
-        </div>
-
-        <div class="terminal-window" style="margin-top: 40px;">
-            <div class="terminal-header">
-                <div class="terminal-dot dot-red"></div>
-                <div class="terminal-dot dot-yellow"></div>
-                <div class="terminal-dot dot-green"></div>
-                <span class="terminal-title">root@cyberpaellas:~/game-info</span>
-                <button id="tab-btn" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid #00ff41;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:12px;padding:2px 8px;cursor:pointer;border-radius:3px;" title="Autocompletar">TAB</button>
-            </div>
-            <div class="terminal-body" id="interactive-terminal">
-                <div id="terminal-history"></div>
-                <p style="display:flex;flex-wrap:nowrap;align-items:baseline;white-space:nowrap;"><span id="input-prompt" class="prompt">root@cyberpaellas:~$</span>&nbsp;<span id="current-input" class="command"></span><span class="typing">&nbsp;</span><input type="text" id="mobile-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="display:none;background:transparent;border:none;color:#00ff41;font-family:'Share Tech Mono',monospace;font-size:inherit;flex:1;min-width:0;outline:none;padding:0;margin:0;caret-color:#00ff41;"></p>
-            </div>
-        </div>
-
-        <h2 id="section-start" class="section-title">COMENZAR MISION</h2>
-        <div id="start-container" style="text-align: center; margin: 30px 0;">
-            <a href="#" class="btn">INICIAR JUEGO</a>
-        </div>
-
-        <div id="result-section" style="display: none;">
-            <div class="terminal-window">
-                <div class="terminal-body" style="text-align: center; padding: 40px 24px;">
-                    <h2 id="result-title" style="font-family: 'Orbitron', sans-serif; font-size: 2rem; margin-bottom: 20px;"></h2>
-                    <p id="result-message" class="output" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
-                    <p id="result-time" class="output highlight" style="font-size: 1.5rem;"></p>
-                </div>
-            </div>
-        </div>
-
+        <div id="qr-countdown"></div>
+      </div>
     </div>
+    <div class="hints">
+      <span class="hint hint--tap" id="hint-tap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11V6a3 3 0 0 1 6 0v5"/>
+          <path d="M9 11H7a2 2 0 0 0-2 2v1a8 8 0 0 0 8 8 8 8 0 0 0 8-8v-1a2 2 0 0 0-2-2h-2"/>
+        </svg>
+        Pulsa la ficha para compartir
+      </span>
+      <div class="hints-divider"></div>
+      <span class="hint hint--scan" id="hint-scan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="5" height="5" rx="1"/>
+          <rect x="16" y="3" width="5" height="5" rx="1"/>
+          <rect x="3" y="16" width="5" height="5" rx="1"/>
+          <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
+          <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
+        </svg>
+        Escanea la ficha compartida de un compañero para formar una palabra
+      </span>
+    </div>
+    <div class="team-block">
+      <span class="team-heading">Equipo</span>
+      <span class="team-name" id="team-label-normal"></span>
+    </div>
+  </div>
 
-    <footer>
-        <p id="footer-text">[ CYBERPAELLAS v1.0.0 ] — Juego de Ciberseguridad - ATICA</p>
-        <p id="footer-message" style="margin-top: 8px;">"En la red, la paranoia es una virtud"</p>
-    </footer>
+  <!-- ── Vista palabra (acumulando) ── -->
+  <div id="view-word">
+    <div class="team-block">
+      <span class="team-heading">Equipo</span>
+      <span class="team-name" id="team-label-word"></span>
+    </div>
+    <div class="tiles-row" id="tiles-row"></div>
+    <div class="word-preview" id="word-preview"></div>
+    <input class="word-input" id="word-input" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="Escribe tu palabra..." />
+    <div class="score-display">
+      <div class="score-value" id="partial-score">0</div>
+      <div class="score-label">puntos acumulados</div>
+    </div>
+    <button class="btn-validate" id="btn-validate">Reordenar letras</button>
+  </div>
 
-    <script>
-        (function() {
-            let team = sessionStorage.getItem('cyberpaellas_team');
-            if (!team) {
-                team = Math.random() < 0.5 ? 'evil' : 'soc';
-                sessionStorage.setItem('cyberpaellas_team', team);
+  <!-- ── Vista done (palabra validada) ── -->
+  <div id="view-done">
+    <div class="team-block">
+      <span class="team-heading">Equipo</span>
+      <span class="team-name" id="team-label-done"></span>
+    </div>
+    <div class="tiles-row" id="tiles-row-done"></div>
+    <div class="word-display" id="word-display"></div>
+    <div class="final-score">
+      <div class="score-value" id="final-score-value"></div>
+      <div class="score-label">puntos</div>
+    </div>
+    <p class="final-team-msg" id="final-team-msg"></p>
+  </div>
+
+  <!-- ── Diálogo confirmación compartir ── -->
+  <div id="view-confirm">
+    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-title">¿Compartir tu ficha?</div>
+    <div class="confirm-msg">
+      Una vez que compartas tu ficha <strong>no podrás deshacer la acción</strong>.<br><br>
+      Otro miembro de tu equipo tendrá <strong>30 segundos</strong> para escanear el código QR de tu ficha.
+    </div>
+    <div class="confirm-buttons">
+      <button class="btn-confirm-no"  id="btn-confirm-no">Cancelar</button>
+      <button class="btn-confirm-yes" id="btn-confirm-yes">Compartir</button>
+    </div>
+  </div>
+
+  <!-- ── Vista error ── -->
+  <div id="view-error">
+    <div class="error-icon" id="error-close" title="Volver">✕</div>
+    <div class="error-title" id="error-title">Ficha no válida</div>
+    <div class="error-msg"   id="error-msg"></div>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // URL BASE PARA COMPARTIR — edita esta variable
+    // ─────────────────────────────────────────────
+    const SHARE_BASE_URL = 'https://juanjmerono.github.io/skratica/';
+
+    // ─────────────────────────────────────────────
+    // CONFIGURACIÓN DE LETRAS
+    // ─────────────────────────────────────────────
+    const LETTERS = [
+      { letter: 'A',  score: 1,  weight: 12 },
+      { letter: 'E',  score: 1,  weight: 12 },
+      { letter: 'O',  score: 1,  weight: 9  },
+      { letter: 'I',  score: 1,  weight: 6  },
+      { letter: 'S',  score: 1,  weight: 6  },
+      { letter: 'N',  score: 1,  weight: 5  },
+      { letter: 'R',  score: 1,  weight: 5  },
+      { letter: 'U',  score: 1,  weight: 5  },
+      { letter: 'D',  score: 2,  weight: 5  },
+      { letter: 'L',  score: 1,  weight: 4  },
+      { letter: 'T',  score: 1,  weight: 4  },
+      { letter: 'C',  score: 3,  weight: 4  },
+      { letter: 'M',  score: 3,  weight: 3  },
+      { letter: 'P',  score: 3,  weight: 2  },
+      { letter: 'B',  score: 3,  weight: 2  },
+      { letter: 'G',  score: 2,  weight: 2  },
+      { letter: 'H',  score: 4,  weight: 2  },
+      { letter: 'F',  score: 4,  weight: 1  },
+      { letter: 'V',  score: 4,  weight: 1  },
+      { letter: 'Y',  score: 4,  weight: 1  },
+      { letter: 'Q',  score: 5,  weight: 1  },
+      { letter: 'J',  score: 8,  weight: 1  },
+      { letter: 'Ñ',  score: 8,  weight: 1  },
+      { letter: 'X',  score: 8,  weight: 1  },
+      { letter: 'Z',  score: 10, weight: 1  },
+    ];
+
+    // Equipos: clave interna A/B, nombre y colores configurables libremente
+    const TEAMS = {
+      A: {
+        label:      'Rojo',
+        color:      '#e05252',
+        tileBg:     '#fdf0f0',
+        tileBorder: '#e8c4c4',
+        glow:       'rgba(224, 82, 82, 0.55)',
+        qrColor:    '#c02020',
+      },
+      B: {
+        label:      'Azul',
+        color:      '#5278e0',
+        tileBg:     '#f0f3fd',
+        tileBorder: '#c4cce8',
+        glow:       'rgba(82, 120, 224, 0.55)',
+        qrColor:    '#2040b0',
+      },
+    };
+
+    // ─────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────
+    const totalWeight = LETTERS.reduce((sum, l) => sum + l.weight, 0);
+
+    function weightedRandom() {
+      let rand = Math.random() * totalWeight;
+      for (const entry of LETTERS) {
+        rand -= entry.weight;
+        if (rand <= 0) return entry;
+      }
+      return LETTERS[LETTERS.length - 1];
+    }
+
+    function letterEntry(l) {
+      return LETTERS.find(e => e.letter === l) || { letter: l, score: 0 };
+    }
+
+    function applyTeamCSS(teamConf) {
+      const root = document.documentElement;
+      root.style.setProperty('--team-color',      teamConf.color);
+      root.style.setProperty('--team-tile-bg',     teamConf.tileBg);
+      root.style.setProperty('--team-tile-border', teamConf.tileBorder);
+      root.style.setProperty('--team-glow',        teamConf.glow);
+    }
+
+    // ─────────────────────────────────────────────
+    // PERSISTENCIA
+    // ─────────────────────────────────────────────
+    function getOrAssignLetter() {
+      const saved = localStorage.getItem('skratica_letter');
+      if (saved) {
+        const entry = LETTERS.find(l => l.letter === saved);
+        if (entry) return entry;
+      }
+      const entry = weightedRandom();
+      localStorage.setItem('skratica_letter', entry.letter);
+      return entry;
+    }
+
+    function getOrAssignTeam() {
+      const saved = localStorage.getItem('skratica_team');
+      if (saved && TEAMS[saved]) return saved;
+      const team = Math.random() < 0.5 ? 'A' : 'B';
+      localStorage.setItem('skratica_team', team);
+      return team;
+    }
+
+    function getMode()       { return localStorage.getItem('skratica_mode') || 'normal'; }
+    function setMode(m)      { localStorage.setItem('skratica_mode', m); }
+    function getWordLetters(){ return JSON.parse(localStorage.getItem('skratica_word') || '[]'); }
+    function setWordLetters(arr){ localStorage.setItem('skratica_word', JSON.stringify(arr)); }
+
+    // ─────────────────────────────────────────────
+    // CONSTRUCCIÓN DE FICHAS PEQUEÑAS
+    // ─────────────────────────────────────────────
+    function buildMiniTile(letterStr) {
+      const entry = letterEntry(letterStr);
+      const tile  = document.createElement('div');
+      tile.className = 'mini-tile';
+      tile.dataset.letter = entry.letter;
+      const l = document.createElement('span');
+      l.className = 'mini-tile-letter';
+      l.textContent = entry.letter;
+      const s = document.createElement('span');
+      s.className = 'mini-tile-score';
+      s.textContent = entry.score;
+      tile.appendChild(l);
+      tile.appendChild(s);
+      return tile;
+    }
+
+    function calcScore(letters) {
+      return letters.reduce((sum, l) => sum + (letterEntry(l).score || 0), 0);
+    }
+
+    // Actualiza opacidad de fichas según qué letras están usadas en inputStr
+    // Devuelve { used, unused }
+    function applyUsageToTilesAndReturn(inputStr, allLetters) {
+      const pool = allLetters.map(l => l.toUpperCase());
+      const used = [];
+
+      for (const ch of inputStr.toUpperCase()) {
+        const idx = pool.indexOf(ch);
+        if (idx !== -1) { used.push(allLetters[idx]); pool.splice(idx, 1); }
+      }
+      // Las que quedan en pool son no usadas — sus índices originales
+      // Necesitamos marcar cada tile del DOM
+      const usedOriginal = [...used];
+      const poolOriginal = allLetters.map(l => l.toUpperCase());
+      const consumed     = [];
+      for (const ch of inputStr.toUpperCase()) {
+        const idx = poolOriginal.indexOf(ch);
+        if (idx !== -1) { consumed.push(idx); poolOriginal.splice(idx, 1); }
+      }
+
+      const tiles = document.querySelectorAll('#tiles-row .mini-tile');
+      // Rebuilding: consumed has original indices of used tiles
+      // Easier: mark by iterating tiles with a fresh pool
+      const markPool = allLetters.map(l => l.toUpperCase());
+      const inputUpper = inputStr.toUpperCase();
+      // Which original-index positions are used?
+      const usedIndices = new Set();
+      const tmpPool = allLetters.map((l, i) => ({ l: l.toUpperCase(), i }));
+      for (const ch of inputUpper) {
+        const found = tmpPool.find(x => x.l === ch);
+        if (found) {
+          usedIndices.add(found.i);
+          tmpPool.splice(tmpPool.indexOf(found), 1);
+        }
+      }
+
+      tiles.forEach((tile, i) => {
+        if (usedIndices.has(i)) {
+          tile.classList.remove('unused');
+        } else {
+          tile.classList.add('unused');
+        }
+      });
+
+      const unused = allLetters.filter((_, i) => !usedIndices.has(i));
+      return { used: used, unused };
+    }
+
+    function applyUsageToTiles(inputStr, allLetters) {
+      applyUsageToTilesAndReturn(inputStr, allLetters);
+    }
+
+    // ─────────────────────────────────────────────
+    // MOSTRAR VISTAS
+    // ─────────────────────────────────────────────
+    function showError(title, msg, onClose) {
+      document.getElementById('view-normal').style.display = 'none';
+      document.getElementById('view-word').classList.remove('active');
+      document.getElementById('view-done').classList.remove('active');
+      document.getElementById('error-title').textContent = title;
+      document.getElementById('error-msg').textContent   = msg;
+      document.getElementById('view-error').classList.add('active');
+
+      // La X cierra el error y ejecuta el callback de retorno
+      const closeBtn = document.getElementById('error-close');
+      const handler = () => {
+        document.getElementById('view-error').classList.remove('active');
+        closeBtn.removeEventListener('click', handler);
+        if (onClose) onClose();
+      };
+      closeBtn.addEventListener('click', handler);
+    }
+
+    function showWordView(teamConf, letters, forceBtnState) {
+      document.getElementById('view-normal').style.display = 'none';
+      const row = document.getElementById('tiles-row');
+      row.innerHTML = '';
+      letters.forEach(l => row.appendChild(buildMiniTile(l)));
+
+      // Preview: orden confirmado si existe, si no orden de acumulación
+      const confirmedWord = localStorage.getItem('skratica_word_order') || letters.join('');
+      document.getElementById('word-preview').textContent = confirmedWord.toUpperCase();
+
+      // Score: solo letras usadas confirmadas
+      const confirmedUsed = localStorage.getItem('skratica_word_used');
+      const usedLetters   = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
+      document.getElementById('partial-score').textContent = calcScore(usedLetters);
+
+      // Aplicar opacidad SIEMPRE (si no hay confirmado, todas usadas)
+      applyUsageToTilesAndReturn(confirmedWord, letters);
+
+      document.getElementById('team-label-word').textContent = teamConf.label;
+
+      // Estado del botón: forzado si se indica, si no inferir del estado
+      const btn = document.getElementById('btn-validate');
+      const btnState = forceBtnState || (confirmedUsed ? 'validate' : 'reorder');
+      if (btnState === 'validate') {
+        btn.textContent   = 'Validar palabra';
+        btn.dataset.state = 'validate';
+      } else {
+        btn.textContent   = 'Reordenar letras';
+        btn.dataset.state = 'reorder';
+      }
+
+      // Ocultar input
+      document.getElementById('word-input').classList.remove('visible');
+      document.getElementById('word-input').value = '';
+
+      document.getElementById('view-word').classList.add('active');
+    }
+
+    function showDoneView(teamConf, letters) {
+      document.getElementById('view-normal').style.display = 'none';
+      document.getElementById('view-word').classList.remove('active');
+
+      // Usar el orden y letras usadas confirmados si existen
+      const confirmedWord  = localStorage.getItem('skratica_word_order') || letters.join('');
+      const confirmedUsed  = localStorage.getItem('skratica_word_used');
+      const usedLetters    = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
+      const unusedLetters  = confirmedUsed
+        ? (() => { const p = [...letters]; usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i,1); }); return p; })()
+        : [];
+
+      const row = document.getElementById('tiles-row-done');
+      row.innerHTML = '';
+      // Mostrar fichas usadas primero, luego no usadas con opacidad
+      usedLetters.forEach(l => row.appendChild(buildMiniTile(l)));
+      unusedLetters.forEach(l => {
+        const t = buildMiniTile(l);
+        t.classList.add('unused');
+        row.appendChild(t);
+      });
+
+      const score = calcScore(usedLetters);
+
+      document.getElementById('word-display').textContent      = confirmedWord.toUpperCase();
+      document.getElementById('final-score-value').textContent = score;
+      document.getElementById('team-label-done').textContent   = teamConf.label;
+      document.getElementById('final-team-msg').innerHTML      =
+        `${score} puntos para el equipo <strong>${teamConf.label}</strong>`;
+
+      document.getElementById('view-done').classList.add('active');
+    }
+
+    // ─────────────────────────────────────────────
+    // PROCESAMIENTO DEL PARÁMETRO ?tile=
+    // ─────────────────────────────────────────────
+    function processTileParam(encoded, myTeamKey, myMode) {
+      // Decodificar base64
+      let payload;
+      try {
+        payload = atob(encoded);
+      } catch {
+        return { ok: false, title: 'Ficha no válida', msg: 'El código de la ficha no se puede leer.' };
+      }
+
+      const parts = payload.split(',');
+      if (parts.length !== 3) {
+        return { ok: false, title: 'Ficha no válida', msg: 'El formato de la ficha es incorrecto.' };
+      }
+
+      const [inLetter, inTeam, inTsStr] = parts;
+      const inTs = parseInt(inTsStr, 10);
+
+      if (!inLetter || !inTeam || isNaN(inTs)) {
+        return { ok: false, title: 'Ficha no válida', msg: 'El formato de la ficha es incorrecto.' };
+      }
+
+      // Validar equipo
+      if (inTeam !== myTeamKey) {
+        const inTeamConf = TEAMS[inTeam];
+        const inTeamName = inTeamConf ? inTeamConf.label : inTeam;
+        return {
+          ok: false,
+          title: 'Equipo incorrecto',
+          msg: `Esta ficha pertenece al equipo ${inTeamName}. Solo puedes unir fichas de tu propio equipo.`,
+        };
+      }
+
+      // Validar timestamp (< 40 segundos)
+      const age = Date.now() - inTs;
+      if (age < 0 || age > 40000) {
+        const secs = Math.round(Math.abs(age) / 1000);
+        return {
+          ok: false,
+          title: 'Ficha caducada',
+          msg: `Esta ficha se generó hace demasiado tiempo y ha caducado, solo son válidas durante un tiempo.`,
+        };
+      }
+
+      // Validar estado del receptor
+      if (myMode === 'sharing') {
+        return {
+          ok: false,
+          title: 'Ya has compartido tu ficha',
+          msg: 'Una vez en modo compartir no puedes acumular letras de otros jugadores.',
+        };
+      }
+
+      if (myMode === 'done') {
+        return {
+          ok: false,
+          title: 'Palabra ya validada',
+          msg: 'Tu palabra ya ha sido validada. No puedes añadir más letras.',
+        };
+      }
+
+      // Validar que la letra existe
+      if (!LETTERS.find(e => e.letter === inLetter)) {
+        return { ok: false, title: 'Letra desconocida', msg: `La letra "${inLetter}" no es válida.` };
+      }
+
+      return { ok: true, letter: inLetter };
+    }
+
+    // ─────────────────────────────────────────────
+    // MODO COMPARTIR (QR)
+    // ─────────────────────────────────────────────
+    let qrGenerated = false;
+
+    function renderQR(shareUrl, teamConf) {
+      const el = document.getElementById('qr-code');
+      el.innerHTML = '';
+      new QRCode(el, {
+        text:         shareUrl,
+        width:        316,
+        height:       316,
+        colorDark:    teamConf.qrColor,
+        colorLight:   '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+      qrGenerated = true;
+    }
+
+    function showQRPanel(entry) {
+      document.getElementById('tile').classList.add('hidden');
+      document.getElementById('qr-panel').classList.add('visible');
+      document.querySelector('.hints').style.opacity = '0';
+      if (entry) {
+        document.getElementById('qr-hint-letter').textContent = entry.letter;
+        document.getElementById('qr-hint-score').textContent  = entry.score;
+      }
+      // Iniciar cuenta atrás si hay URL guardada
+      const expiry = getShareExpiry();
+      if (expiry) startCountdown(expiry);
+    }
+
+    function getShareExpiry() {
+      const url = localStorage.getItem('skratica_share_url');
+      if (!url) return null;
+      try {
+        const encoded = new URL(url).searchParams.get('tile');
+        if (!encoded) return null;
+        const payload = atob(encoded);
+        const ts = parseInt(payload.split(',')[2], 10);
+        if (isNaN(ts)) return null;
+        return ts + 30000;
+      } catch { return null; }
+    }
+
+    let _countdownInterval = null;
+
+    function startCountdown(expiresAt) {
+      const el = document.getElementById('qr-countdown');
+      if (_countdownInterval) clearInterval(_countdownInterval);
+
+      function tick() {
+        const remaining = Math.max(0, expiresAt - Date.now());
+        const secs = Math.ceil(remaining / 1000);
+        if (remaining <= 0) {
+          el.textContent = 'Caducado';
+          el.classList.add('urgent');
+          clearInterval(_countdownInterval);
+          _countdownInterval = null;
+          return;
+        }
+        el.textContent = `0:${String(secs).padStart(2, '0')}`;
+        el.classList.toggle('urgent', secs <= 10);
+      }
+
+      tick();
+      el.classList.add('visible');
+      _countdownInterval = setInterval(tick, 500);
+    }
+
+    function showConfirm(onConfirm) {
+      document.getElementById('view-normal').style.display = 'none';
+      document.getElementById('view-confirm').classList.add('active');
+
+      const yes = document.getElementById('btn-confirm-yes');
+      const no  = document.getElementById('btn-confirm-no');
+
+      const cleanup = () => {
+        yes.removeEventListener('click', onYes);
+        no.removeEventListener('click',  onNo);
+      };
+
+      function onYes() {
+        cleanup();
+        document.getElementById('view-confirm').classList.remove('active');
+        document.getElementById('view-normal').style.display = '';
+        onConfirm();
+      }
+
+      function onNo() {
+        cleanup();
+        document.getElementById('view-confirm').classList.remove('active');
+        document.getElementById('view-normal').style.display = '';
+      }
+
+      yes.addEventListener('click', onYes);
+      no.addEventListener('click',  onNo);
+    }
+
+    function initShareMode(entry, teamKey, teamConf) {
+      // Si hay URL guardada de una sesión anterior de sharing, mostrar QR directamente
+      const savedUrl = localStorage.getItem('skratica_share_url');
+      if (savedUrl) {
+        renderQR(savedUrl, teamConf);
+        showQRPanel(entry);
+        return;
+      }
+
+      document.getElementById('tile-wrapper').addEventListener('click', () => {
+        if (qrGenerated) {
+          showQRPanel(entry);
+          return;
+        }
+
+        showConfirm(() => {
+          const timestamp = Date.now();
+          const payload   = `${entry.letter},${teamKey},${timestamp}`;
+          const encoded   = btoa(payload);
+          const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
+
+          localStorage.setItem('skratica_share_url', shareUrl);
+          renderQR(shareUrl, teamConf);
+          setMode('sharing');
+          showQRPanel(entry);
+        });
+      });
+    }
+
+    // ─────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────
+    (function init() {
+      const myEntry   = getOrAssignLetter();
+      const myTeamKey = getOrAssignTeam();
+      const myMode    = getMode();
+      const teamConf  = TEAMS[myTeamKey];
+
+      applyTeamCSS(teamConf);
+
+      // Siempre rellenar la ficha propia (puede estar oculta pero debe estar lista)
+      document.getElementById('tile-letter').textContent       = myEntry.letter;
+      document.getElementById('tile-score').textContent        = myEntry.score;
+      document.getElementById('team-label-normal').textContent = teamConf.label;
+
+      // ── Input de reordenación ──────────────────────────────────────
+      const wordInput = document.getElementById('word-input');
+
+      wordInput.addEventListener('input', () => {
+        const letters = getWordLetters();
+        let val = wordInput.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ]/gi, '');
+
+        // Filtrar: solo letras disponibles en el pool, sin exceder repeticiones
+        // Pool normalizado a mayúsculas para comparar correctamente
+        const pool = letters.map(l => l.toUpperCase());
+        let filtered = '';
+        for (const ch of val) {
+          const idx = pool.indexOf(ch);
+          if (idx !== -1) {
+            filtered += ch;
+            pool.splice(idx, 1);
+          }
+        }
+
+        if (filtered !== val) {
+          wordInput.value = filtered;
+        }
+
+        // Actualizar preview y opacidad en tiempo real
+        document.getElementById('word-preview').textContent = filtered || letters.join('').toUpperCase();
+        const { used } = applyUsageToTilesAndReturn(filtered, letters);
+        document.getElementById('partial-score').textContent = calcScore(used);
+      });
+
+      // ── Validar / Reordenar / Confirmar ───────────────────────────
+      document.getElementById('btn-validate').addEventListener('click', () => {
+        const btn     = document.getElementById('btn-validate');
+        const letters = getWordLetters();
+        const state   = btn.dataset.state || 'reorder';
+
+        // Estado: "reorder" → mostrar input, cambiar a "confirmar"
+        if (state === 'reorder') {
+          wordInput.value = localStorage.getItem('skratica_word_order') || '';
+          wordInput.classList.add('visible');
+          wordInput.focus();
+          btn.textContent  = 'Confirmar';
+          btn.dataset.state = 'confirm';
+          return;
+        }
+
+        // Estado: "confirm" → guardar orden, volver a "validar"
+        if (state === 'confirm') {
+          const input    = wordInput.value.toUpperCase();
+          const pool     = [...letters];
+          const usedArr  = [];
+          for (const ch of input) {
+            const idx = pool.indexOf(ch);
+            if (idx !== -1) { usedArr.push(ch); pool.splice(idx, 1); }
+          }
+
+          // Persistir el orden y las letras usadas
+          localStorage.setItem('skratica_word_order', input);
+          localStorage.setItem('skratica_word_used',  JSON.stringify(usedArr));
+
+          // Actualizar score y ocultar input
+          document.getElementById('partial-score').textContent = calcScore(usedArr);
+          document.getElementById('word-preview').textContent  = input || letters.join('').toUpperCase();
+          applyUsageToTiles(input, letters);
+
+          wordInput.classList.remove('visible');
+          btn.textContent   = 'Validar palabra';
+          btn.dataset.state = 'validate';
+          return;
+        }
+
+        // Estado: "validate" → validar contra diccionario
+        if (state === 'validate') {
+          const confirmedWord = (localStorage.getItem('skratica_word_order') || letters.join('')).toLowerCase();
+          const confirmedUsed = localStorage.getItem('skratica_word_used');
+          const usedLetters   = confirmedUsed ? JSON.parse(confirmedUsed) : letters;
+          const wordToCheck   = usedLetters.join('').toLowerCase();
+
+          // Usar el orden confirmado si existe, si no las letras en orden de acumulación
+          const wordForDict = localStorage.getItem('skratica_word_order')
+            ? confirmedWord
+            : wordToCheck;
+
+          if (typeof WORDS_ES === 'undefined') {
+            setMode('done');
+            showDoneView(teamConf, letters);
+            return;
+          }
+
+          if (!WORDS_ES.has(wordForDict)) {
+            showError(
+              'Palabra no válida',
+              `"${wordForDict.toUpperCase()}" no es una palabra válida en el diccionario de Scrabble. Sigue añadiendo letras o intenta otra combinación.`,
+              () => showWordView(teamConf, letters, 'reorder')
+            );
+            return;
+          }
+
+          setMode('done');
+          localStorage.setItem('skratica_word_final', wordForDict);
+          showDoneView(teamConf, letters);
+        }
+      });
+
+      // ¿Llega parámetro ?reset=?
+      const params = new URLSearchParams(window.location.search);
+      const resetEncoded = params.get('reset');
+
+      if (resetEncoded) {
+        // Limpiar parámetro de la URL inmediatamente
+        history.replaceState(null, '', window.location.pathname);
+
+        let resetPayload;
+        let resetValid = false;
+        try {
+          resetPayload = atob(resetEncoded);
+          const resetParts = resetPayload.split(',');
+          if (resetParts.length === 2 && resetParts[0] === 'reset') {
+            const resetTs = parseInt(resetParts[1], 10);
+            const resetAge = Date.now() - resetTs;
+            if (!isNaN(resetTs) && resetAge >= 0 && resetAge <= 40000) {
+              resetValid = true;
             }
+          }
+        } catch { /* payload inválido */ }
 
-            const gameAlreadyStarted = sessionStorage.getItem('cyberpaellas_started') === 'true';
-            const whoamiAlreadyDone = sessionStorage.getItem('cyberpaellas_whoami') === 'true';
-            const savedFirstCommandTime = sessionStorage.getItem('cyberpaellas_start_time');
+        if (resetValid) {
+          // Borrar todo el localStorage de Skratica y recargar limpio
+          ['skratica_letter','skratica_team','skratica_mode','skratica_word',
+           'skratica_word_order','skratica_word_used','skratica_word_final',
+           'skratica_share_url'].forEach(k => localStorage.removeItem(k));
+          location.reload();
+          return;
+        } else {
+          showError(
+            'Código de reset inválido',
+            'El código de reset ha caducado o no es válido. Genera un nuevo código desde la página de administración.',
+            () => { document.getElementById('view-normal').style.display = ''; }
+          );
+          return;
+        }
+      }
 
-            function hideStartSection() {
-                const sectionStart = document.getElementById('section-start');
-                const startContainer = document.getElementById('start-container');
-                if (sectionStart) sectionStart.style.display = 'none';
-                if (startContainer) startContainer.style.display = 'none';
-            }
+      // ¿Llega parámetro ?tile=?
+      const encoded = params.get('tile');
 
-            function revealTeamObjectives() {
-                const objectivesOutput = document.getElementById('objectives-output');
-                if (team === 'evil') {
-                    objectivesOutput.innerHTML = 
-                    `<span class="prompt">&gt;</span> <span class="warning"><b>BIENVENIDO</b> a EVIL, descubre la contraseña y vulnera el sistema con el comando SSH</span>.
-<span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
-                } else {
-                    objectivesOutput.innerHTML = 
-                    `<span class="prompt">&gt;</span> <span class="highlight"><b>BIENVENIDO</b> al SOC, descubre la contraseña y activa el doble factor con el comando SSH</span>.
-<span class="prompt">&gt;</span> No lo olvides eres parte de un equipo, pide ayuda si la necesitas.<br>`;
-                }
-            }
+      // Limpiar el parámetro de la URL inmediatamente (antes de cualquier lógica)
+      history.replaceState(null, '', window.location.pathname);
 
-            if (gameAlreadyStarted) {
-                hideStartSection();
-            }
-            if (whoamiAlreadyDone) {
-                revealTeamObjectives();
-            }
+      if (encoded) {
+        const result = processTileParam(encoded, myTeamKey, myMode);
 
-            // Interactive terminal
-            const terminalHistory = document.getElementById('terminal-history');
-            const currentInput = document.getElementById('current-input');
-            const inputPrompt = document.getElementById('input-prompt');
-            const mobileInput = document.getElementById('mobile-input');
-            let inputBuffer = '';
-            let awaitingPassword = false;
-            let gameStarted = gameAlreadyStarted;
-            let gameEnded = false;
-            let firstCommandTime = savedFirstCommandTime ? parseInt(savedFirstCommandTime) : null;
-
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-
-            if (isMobile) {
-                mobileInput.style.display = 'inline';
-                currentInput.style.display = 'none';
-                document.querySelector('.typing').style.display = 'none';
-                document.getElementById('tab-btn').style.display = 'block';
-
-                mobileInput.addEventListener('input', () => {
-                    inputBuffer = mobileInput.value;
-                });
-
-                document.getElementById('interactive-terminal').addEventListener('click', () => {
-                    mobileInput.focus();
-                });
-
-                document.getElementById('tab-btn').addEventListener('click', () => {
-                    handleTabCompletion();
-                    mobileInput.focus();
-                });
-            }
-
-            // echo -n "admin" | shasum -a 256 | awk '{print $1}'
-            const CORRECT_HASH = '21dd875f3b8cd83ce9b86c4ffa0c49097b4c58988091888897e608fb6c6d6953';
-
-            async function verifyPassword(input) {
-                const encoder = new TextEncoder();
-                const data = encoder.encode(input);
-                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                return hashHex === CORRECT_HASH;
-            }
-
-            const sizeCalc = function() { return this.content.length; }
-            const files = [
-                { name: '.', content:'JHt3b3JkfTM1NDE3NjI=', size: sizeCalc, perms: 'drwxr-xr-x', links: 7 },
-                { name: '..', content:'Skh0M2IzSmtmVE0xTkRFM05qST0=', size: sizeCalc, perms: 'drwxr-xr-x', links: 7 },
-                { name: '.pass.txt', 
-                  content: 'YWRtaW4xMjM0IGVyYSBkZW1hc2lhZG8gb2J2aW8sIGxhIGNhbWJpYW1vcyBwZXJvIG1hbnR1dmltb3MgZWwgZm9ybWF0bw==', 
-                  size: sizeCalc, perms: '-rw-r--r--', links: 1 },
-                { name: 'pass.txt', 
-                  content: 'admin1234', 
-                  size: sizeCalc, perms: '-rw-r--r--', links: 1 },
-                { name: 'README.md', 
-                  content: 'Mientras tu disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de ATICA.\n\n'+
-                              'Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.\n\n'+
-                              'Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.', 
-                  size: sizeCalc, perms: '-rw-r--r--', links: 1 },
-                { name: 'index.html',
-                  content: document.documentElement.outerHTML, 
-                  size: sizeCalc, perms: '-rw-r--r--', links: 1 },
-                { name: 'poemas.html',
-                  content: null,
-                  size: function() { return this.content ? this.content.length : 0; },
-                  perms: '-rw-r--r--', links: 1 }
-            ];
-
-            fetch('poemas.html')
-                .then(r => r.text())
-                .then(text => {
-                    const poemas = getFile('poemas.html');
-                    if (poemas) poemas.content = text;
-                });
-
-            const getFile = (name) => files.find(f => f.name === name);
-            const isRealFile = (name) => name == 'README.md';
-            const isFile = (f) => f && f.perms.startsWith('-');
-
-            function resetStorage() {
-                sessionStorage.removeItem('cyberpaellas_team'); 
-                sessionStorage.removeItem('cyberpaellas_started'); 
-                sessionStorage.removeItem('cyberpaellas_whoami'); 
-                sessionStorage.removeItem('cyberpaellas_start_time'); 
-            }
-
-            const commands = {
-                help: () => 'Comandos disponibles: help, clear, ls, whoami, date, cat, ssh, base64, open, reset',
-                whoami: () => {
-                    sessionStorage.setItem('cyberpaellas_whoami', 'true');
-                    revealTeamObjectives();
-                    return team;
-                },
-                date: () => new Date().toString(),
-                ls: (args) => {
-                    const hora = '09:21';
-                    const ahora = new Date();
-                    const mes = ahora.toLocaleString('en-US', { month: 'short' });
-                    const dia = String(ahora.getDate()).padStart(2, '0');
-                    const year = ahora.getFullYear();
-                    const horas = String(ahora.getHours()).padStart(2, '0');
-                    const minutos = String(ahora.getMinutes()).padStart(2, '0');
-                    const fechaReal = `${mes} ${dia} ${year} ${horas}:${minutos}`;
-                    const fechaFake = `${mes} ${dia} ${year} ${hora}`;
-
-                    const formatFile = (f) => `${f.perms} ${f.links} root ${team}  ${String(f.size()).padStart(5)}  ${isRealFile(f.name)?fechaReal:fechaFake} ${f.name}`;
-                    
-                    const globToRegex = (pattern) => {
-                        const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
-                        const regex = escaped.replace(/\*/g, '.*').replace(/\?/g, '.');
-                        return new RegExp(`^${regex}$`);
-                    };
-                    
-                    const knownOptions = ['-a', '-l', '-la', '-al'];
-                    const options = [];
-                    const fileArgs = [];
-                    
-                    for (const arg of args) {
-                        if (arg.startsWith('-') && !arg.includes('*') && !arg.includes('?')) {
-                            options.push(arg);
-                        } else {
-                            fileArgs.push(arg);
-                        }
-                    }
-                    
-                    const hasA = options.some(o => o === '-a' || o === '-la' || o === '-al');
-                    const hasL = options.some(o => o === '-l' || o === '-la' || o === '-al');
-                    const unknownOptions = options.filter(o => !knownOptions.includes(o));
-                    
-                    if (unknownOptions.length > 0) {
-                        return `ls: invalid option -- ${unknownOptions[0].replace('-', '')}`;
-                    }
-                    
-                    const pool = hasA ? files : files.filter(f => !f.name.startsWith('.'));
-                    
-                    if (fileArgs.length > 0) {
-                        const results = [];
-                        for (const arg of fileArgs) {
-                            if (arg.includes('*') || arg.includes('?')) {
-                                const regex = globToRegex(arg);
-                                const matches = pool.filter(f => regex.test(f.name));
-                                if (matches.length === 0) {
-                                    results.push(`ls: cannot access '${arg}': No such file or directory`);
-                                } else if (hasL) {
-                                    results.push(matches.sort((a, b) => a.name.localeCompare(b.name)).map(f => formatFile(f)).join('\n'));
-                                } else {
-                                    results.push(matches.sort((a, b) => a.name.localeCompare(b.name)).map(f => f.name).join(' '));
-                                }
-                            } else {
-                                const file = getFile(arg);
-                                if (!file) {
-                                    results.push(`ls: cannot access '${arg}': No such file or directory`);
-                                } else if (hasL) {
-                                    results.push(formatFile(file));
-                                } else {
-                                    results.push(file.name);
-                                }
-                            }
-                        }
-                        return results.join('\n');
-                    }
-                    
-                    const sortedFiles = pool.sort((a, b) => a.name.localeCompare(b.name));
-                    
-                    if (hasL) {
-                        return sortedFiles.map(f => formatFile(f)).join('\n');
-                    }
-                    
-                    return sortedFiles.map(f => f.name).join(' ');
-                },
-                clear: () => { 
-                    terminalHistory.innerHTML = ''; return null; 
-                },
-                cat: (args) => {
-                    const file = getFile(args[0]);
-                    if (file) return file.content;
-                    return `cat: ${args[0]}: No such file or directory`;
-                },
-                base64: (args) => {
-                    if (args.length < 2) return 'Usage: base64 [-d|-e] <file>';
-                    const flag = args[0];
-                    const file = getFile(args[1]);
-                    if (!file) return `base64: ${args[1]}: No such file or directory`;
-                    if (flag === '-d') {
-                        try { return atob(file.content); } catch(e) { return `base64: invalid input`; }
-                    }
-                    if (flag === '-e') {
-                        return btoa(file.content);
-                    }
-                    return `base64: invalid option -- ${flag}`;
-                },
-                reset: () => { 
-                    setTimeout(function() { 
-                        resetStorage();
-                        location.reload(); 
-                    }, 1200); 
-                    return 'Reiniciando...'; 
-                },
-                ssh: () => { awaitingPassword = true; inputPrompt.style.display = 'none'; return 'root@atica password: '; },
-                open: (args) => {
-                    if (getFile(args[0]) && isFile(getFile(args[0]))) { location.href = args[0]; return; }
-                    return `The file ${args[0]} does not exist.`;
-                }
+        if (!result.ok) {
+          let onClose;
+          if (myMode === 'word') {
+            onClose = () => showWordView(teamConf, getWordLetters());
+          } else if (myMode === 'done') {
+            onClose = () => showDoneView(teamConf, getWordLetters());
+          } else if (myMode === 'sharing') {
+            onClose = () => {
+              document.getElementById('view-normal').style.display = '';
+              const savedUrl = localStorage.getItem('skratica_share_url');
+              if (savedUrl && !qrGenerated) renderQR(savedUrl, teamConf);
+              showQRPanel(myEntry);
             };
+          } else {
+            onClose = () => { document.getElementById('view-normal').style.display = ''; };
+          }
+          showError(result.title, result.msg, onClose);
+          return;
+        }
 
-            // Auto-type "help" when "INICIAR JUEGO" is clicked
-            document.querySelector('.btn').addEventListener('click', async (e) => {
-                e.preventDefault();
-                
-                if (gameStarted) return;
-                
-                gameStarted = true;
-                sessionStorage.setItem('cyberpaellas_started', 'true');
-                hideStartSection();
-                
-                const hint = 'help';
-                let i = 0;
-                const typeInterval = setInterval(() => {
-                    if (i < hint.length) {
-                        inputBuffer += hint[i];
-                        currentInput.textContent = inputBuffer;
-                        i++;
-                    } else {
-                        clearInterval(typeInterval);
-                        
-                        if (!firstCommandTime) {
-                            firstCommandTime = Date.now();
-                            sessionStorage.setItem('cyberpaellas_start_time', firstCommandTime.toString());
-                        }
-                        
-                        // Simulate Enter
-                        const parts = inputBuffer.trim().split(/\s+/);
-                        const cmd = parts[0].toLowerCase();
-                        const args = parts.slice(1);
+        // Añadir letra a la colección
+        const letters = getWordLetters();
 
-                        const cmdLine = document.createElement('p');
-                        cmdLine.innerHTML = `<span class="prompt">root@cyberpaellas:~$</span> <span class="command">${inputBuffer}</span>`;
-                        terminalHistory.appendChild(cmdLine);
+        // Si es la primera letra del modo palabra, añadir también la propia
+        if (myMode === 'normal' && letters.length === 0) {
+          letters.push(myEntry.letter);
+        }
 
-                        if (cmd && commands[cmd]) {
-                            const output = commands[cmd](args);
-                            if (output !== null && output !== undefined) {
-                                const outputLine = document.createElement('p');
-                                outputLine.className = 'output';
-                                outputLine.textContent = output;
-                                terminalHistory.appendChild(outputLine);
-                            }
-                        }
+        letters.push(result.letter);
+        setWordLetters(letters);
+        setMode('word');
 
-                        inputBuffer = '';
-                        currentInput.textContent = '';
-                    }
-                }, 150);
-            });
+        // Resetear orden confirmado al añadir nueva letra
+        localStorage.removeItem('skratica_word_order');
+        localStorage.removeItem('skratica_word_used');
+        localStorage.removeItem('skratica_share_url');
 
-            async function processEnter() {
-                if (gameEnded) return;
+        showWordView(teamConf, letters);
+        return;
+      }
 
-                if (!firstCommandTime) {
-                    firstCommandTime = Date.now();
-                    sessionStorage.setItem('cyberpaellas_start_time', firstCommandTime.toString());
-                    if (!gameStarted) {
-                        gameStarted = true;
-                        sessionStorage.setItem('cyberpaellas_started', 'true');
-                        hideStartSection();
-                    }
-                }
+      // Sin parámetro — usar modo persistido
+      if (myMode === 'word') {
+        const letters = getWordLetters();
+        showWordView(teamConf, letters);
+        return;
+      }
 
-                if (awaitingPassword) {
-                    const password = inputBuffer;
-                    const cmdLine = document.createElement('p');
-                    cmdLine.innerHTML = `<span class="prompt">root@atica password:</span> <span class="command">********</span>`;
-                    terminalHistory.appendChild(cmdLine);
+      if (myMode === 'done') {
+        const letters = getWordLetters();
+        showDoneView(teamConf, letters);
+        return;
+      }
 
-                    const isValid = await verifyPassword(password);
-                    if (isValid) {
-                        const outputLine = document.createElement('p');
-                        outputLine.className = team === 'evil' ? 'output warning' : 'output highlight';
-                        outputLine.textContent = team === 'evil' ? 'Enhorabuena, has vulnerado el sistema' : 'Felicidades, has activado el doble factor';
-                        terminalHistory.appendChild(outputLine);
+      // Modo normal o sharing — mostrar ficha propia
+      if (myMode === 'sharing') {
+        // Ya estaba compartiendo — no puede acumular, no mostrar hint
+        document.querySelector('.hints').style.display = 'none';
+      }
 
-                        gameEnded = true;
-                        const elapsed = Math.floor((Date.now() - firstCommandTime) / 1000);
-                        const minutes = Math.floor(elapsed / 60);
-                        const seconds = elapsed % 60;
-                        const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-
-                        const resultSection = document.getElementById('result-section');
-                        const resultTitle = document.getElementById('result-title');
-                        const resultMessage = document.getElementById('result-message');
-                        const resultTime = document.getElementById('result-time');
-
-                        resultTitle.textContent = team === 'evil' ? 'EVIL WINS' : 'SOC WINS';
-                        resultTitle.style.color = team === 'evil' ? '#ff0040' : '#00ffff';
-                        resultMessage.textContent = team === 'evil' ? 'El sistema ha sido vulnerado. La contraseña maestra ha sido comprometida.' : 'El doble factor de autenticación ha sido activado. El sistema está seguro.';
-                        resultTime.textContent = `${new Date().toString()} Tiempo: ${timeStr}`;
-
-                        resultSection.style.display = 'block';
-
-                        awaitingPassword = false;
-                        inputPrompt.style.display = 'inline';
-                        inputBuffer = '';
-                        currentInput.textContent = '';
-                        resetStorage();
-                        return;
-                    } else {
-                        const errorLine = document.createElement('p');
-                        errorLine.className = 'output warning';
-                        errorLine.textContent = 'Access denied';
-                        terminalHistory.appendChild(errorLine);
-                    }
-
-                    awaitingPassword = false;
-                    inputPrompt.style.display = 'inline';
-                    inputBuffer = '';
-                    currentInput.textContent = '';
-                    return;
-                }
-
-                const parts = inputBuffer.trim().split(/\s+/);
-                const cmd = parts[0].toLowerCase();
-                const args = parts.slice(1);
-
-                const cmdLine = document.createElement('p');
-                cmdLine.innerHTML = `<span class="prompt">root@cyberpaellas:~$</span> <span class="command">${inputBuffer}</span>`;
-                terminalHistory.appendChild(cmdLine);
-
-                if (cmd && commands[cmd]) {
-                    const output = commands[cmd](args);
-                    if (output !== null && output !== undefined) {
-                        const outputLine = document.createElement('p');
-                        outputLine.className = 'output';
-                        outputLine.textContent = output;
-                        terminalHistory.appendChild(outputLine);
-                    }
-                } else if (cmd) {
-                    const errorLine = document.createElement('p');
-                    errorLine.className = 'output warning';
-                    errorLine.textContent = `bash: ${cmd}: command not found`;
-                    terminalHistory.appendChild(errorLine);
-                }
-
-                inputBuffer = '';
-                currentInput.textContent = '';
-            }
-
-            function getVisibleFiles(withDot) {
-                return files.filter(f => withDot || !f.name.startsWith('.')).sort((a, b) => a.name.localeCompare(b.name));
-            }
-
-            function handleTabCompletion() {
-                const parts = inputBuffer.trim().split(/\s+/);
-                const lastPart = parts[parts.length - 1] || '';
-
-                if (lastPart === '') {
-                    // No text - complete with first non-dot file
-                    const visibleFiles = getVisibleFiles(false);
-                    if (visibleFiles.length > 0) {
-                        inputBuffer += visibleFiles[0].name.substring(lastPart.length);
-                        mobileInput.value = inputBuffer;
-                        currentInput.textContent = inputBuffer;
-                    }
-                    return;
-                }
-                
-                // Find files matching the current prefix
-                const visibleFiles = getVisibleFiles(lastPart.startsWith('.'));
-                const matches = visibleFiles.filter(f => f.name.startsWith(lastPart));
-
-                if (matches.length > 0) {
-                    // Exactly one match - complete it
-                    inputBuffer += matches[0].name.substring(lastPart.length);
-                    mobileInput.value = inputBuffer;
-                    currentInput.textContent = inputBuffer;
-                }
-                // If multiple matches or no matches, do nothing
-            }
-
-            document.addEventListener('keydown', async (e) => {
-                if (gameEnded) return;
-
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    await processEnter();
-                    mobileInput.value = '';
-                } else if (e.key === 'Tab') {
-                    e.preventDefault();
-                    handleTabCompletion();
-                } else if (e.key === 'Backspace') {
-                    inputBuffer = inputBuffer.slice(0, -1);
-                    currentInput.textContent = inputBuffer;
-                } else if (e.key.length === 1) {
-                    inputBuffer += e.key;
-                    currentInput.textContent = inputBuffer;
-                }
-            });
-        })();
-    </script>
+      initShareMode(myEntry, myTeamKey, teamConf);
+    })();
+  </script>
 </body>
 </html>
