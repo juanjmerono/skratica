@@ -1918,8 +1918,9 @@
       if (!tile && !reset) return false;
 
       // Es una URL válida — parar escáner y notificar
+      const cb = _scanCallback;
       stopScanner();
-      if (_scanCallback) _scanCallback({ tile, reset });
+      if (cb) cb({ tile, reset });
       return true;
     }
 
