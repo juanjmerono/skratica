@@ -154,7 +154,7 @@
          'skratica_word_used_bonuses','skratica_word_final',
          'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
          'skratica_used_tiles','skratica_created_at',
-         'skratica_captain','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
+         'skratica_captain','skratica_captain_id','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
          'skratica_team_count',
         ].forEach(k => localStorage.removeItem(k));
         location.reload();
@@ -747,9 +747,10 @@
       document.getElementById('btn-surplus').style.display = pendingLetters.length > 0 ? '' : 'none';
 
       // Generar QR de palabra para que el capitán lo escanee
+      const _captainId = localStorage.getItem('skratica_captain_id') || '';
       const _wordQrTs  = Date.now();
       const _wordQrId  = Math.random().toString(36).slice(2, 10);
-      const _wordQrPayload = btoa(`word,${myTeamKey},${confirmedWord},${score},${_wordQrTs},${_wordQrId}`);
+      const _wordQrPayload = btoa(`word,${myTeamKey},${confirmedWord},${score},${_captainId},${_wordQrTs},${_wordQrId}`);
       const _wordQrUrl = `${SHARE_BASE_URL}/?tile=${_wordQrPayload}`;
       const _wordQrEl  = document.getElementById('done-word-qr-code');
       _wordQrEl.innerHTML = '';
@@ -784,7 +785,7 @@
       if (parts.length !== 4 || parts[0] !== 'captain') {
         return { ok: false, title: 'Código no válido', msg: 'Este no es un código de capitán.' };
       }
-      const [, inTeam, inTsStr] = parts;
+      const [, inTeam, inTsStr, inId] = parts;
       const inTs = parseInt(inTsStr, 10);
       if (inTeam !== myTeamKey) {
         return { ok: false, title: 'Equipo incorrecto', msg: 'Este no es el capitán de tu equipo. Escanea el código QR del capitán de tu equipo.' };
@@ -792,20 +793,21 @@
       if (isNaN(inTs) || Date.now() - inTs > SESSION_TTL_MS) {
         return { ok: false, title: 'Código caducado', msg: 'El código del capitán ha caducado. Pide al capitán que lo regenere.' };
       }
+      localStorage.setItem('skratica_captain_id', inId);
       return { ok: true, type: 'captain' };
     }
 
-    // Valida el QR de palabra validada escaneado por el capitán (payload: "word,TEAM,WORD,SCORE,TS,ID")
+    // Valida el QR de palabra validada escaneado por el capitán (payload: "word,TEAM,WORD,SCORE,CAPTAIN_ID,TS,ID")
     function processCaptainWordQR(encoded, myTeamKey) {
       let payload;
       try { payload = atob(encoded); } catch {
         return { ok: false, title: 'Código no válido', msg: 'El código de palabra no se puede leer.' };
       }
       const parts = payload.split(',');
-      if (parts.length !== 6 || parts[0] !== 'word') {
+      if (parts.length !== 7 || parts[0] !== 'word') {
         return { ok: false, title: 'Código no válido', msg: 'Este no es un código de palabra validada.' };
       }
-      const [, inTeam, inWord, inScoreStr, inTsStr, inId] = parts;
+      const [, inTeam, inWord, inScoreStr, inCaptainId, inTsStr, inId] = parts;
       const inScore = parseInt(inScoreStr, 10);
       const inTs    = parseInt(inTsStr, 10);
       if (inTeam !== myTeamKey) {
@@ -816,6 +818,10 @@
       }
       if (isNaN(inTs) || Date.now() - inTs > SESSION_TTL_MS) {
         return { ok: false, title: 'Código caducado', msg: 'La palabra ha caducado. El equipo debe generar un nuevo código.' };
+      }
+      const myCaptainId = localStorage.getItem('skratica_captain_id') || '';
+      if (inCaptainId && myCaptainId && inCaptainId !== myCaptainId) {
+        return { ok: false, title: 'Capitán incorrecto', msg: 'Palabra de otro capitán, debes entregarla al capitán que te ayudó a empezar la ronda.' };
       }
       const scanned = JSON.parse(localStorage.getItem('skratica_captain_scanned') || '[]');
       if (scanned.includes(inId)) {
@@ -1056,6 +1062,7 @@
         const payload = `captain,${teamKey},${Date.now()},${id}`;
         captainUrl    = `${SHARE_BASE_URL}/?tile=${btoa(payload)}`;
         localStorage.setItem('skratica_captain_url', captainUrl);
+        localStorage.setItem('skratica_captain_id', id);
       }
 
       // Renderizar QR del capitán
@@ -1609,7 +1616,7 @@
              'skratica_word_used_bonuses','skratica_word_final',
              'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
              'skratica_used_tiles','skratica_created_at',
-             'skratica_captain','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
+         'skratica_captain','skratica_captain_id','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
              'skratica_team_count',
             ].forEach(k => localStorage.removeItem(k));
             if (teams) {

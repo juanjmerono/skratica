@@ -720,9 +720,12 @@
       const score = parseInt(scoreStr, 10);
       if (isNaN(score) || score < 0) return;
 
+      const captainId = prompt(`ID del capitán para "${word}":`, '');
+      if (captainId === null) return;
+
       const timestamp = await getNetworkTime();
       const id        = Math.random().toString(36).slice(2, 10);
-      const encoded   = btoa(`word,${teamKey},${word},${score},${timestamp},${id}`);
+      const encoded   = btoa(`word,${teamKey},${word},${score},${captainId},${timestamp},${id}`);
       const url       = `${SHARE_BASE_URL}?tile=${encoded}`;
 
       showQR({
