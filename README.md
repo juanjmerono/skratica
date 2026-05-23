@@ -52,10 +52,13 @@ El equipo con más puntos gana la ronda.
 
 # Diagrama de flujo del juego
 
+[Share FlowChart](https://kroki.io/mermaid/svg/eNp1VcFum0AQvecr5tgc8gdVKoxJTEUgAZIckBWtYeNshXfJAm7Tph-TD-ih6gdUqn-sM7uA12nKxRKeefNm3pvhvlafywemO8jnR4BPlntp_q4IZKeZBlbDp56v1fIYTk5Owcuy8DwuvFasJSvF7pfECM46pQV7v9KnFQf-2ItGwRPUHBGWBtOmGYQs8FJ_Ucz6tmTAoOtbKNWmYbufXKsWJgCbaKNNou9d5l4Y380DP8zCJP7253fOMVduBdcdb6k8l1CyRnS7F7lH-vD9yGC9BiDU52z34xlmgZ9cBHdDQOGVndhi7xtVqQmP4E9gzSXXxBquUmi4bpVk9fL_8LF6hsz34gk7wLYlZ8BrQqjwxy3QMATnm4Z_pdHj5NdMLy37tl-tNWsewB_izVt6DtmbWd16YY6lGuLasJqtNGthy2pRsYq1g1CvRr-cACnbakXMb5N0PtE2nCdIAnoCVvabvsZCvexcmCnbYF0kaYCSXfW8YhI2u5fWNmyRUKMxjQL30hCXf_-isZ6FcZgtijOBCgiaF1LQSlZsz8CGmPJpcBN4UZFx0HzLayOhMSj140rwBWJgqIMohZK8BbTUSHIPbNEMcJ7khNtvEFJ1uC6kqWthekyQVSaMcbfGCLLvfhZmfrBmku17OTYYXFavXPARrVEpfThs1wJkwzlN3CeJaUGmlqmYwjmUqhE1GsO8dCWwuWbSQ7bQ6OOFlwbF23DURy8dOzk2oDRDKZllQXoTpMUla7EsA7Vqud5SH3a7ENF0DQ84TK43KG3lIDm00oE80vKTKAr8fLKo7QYee06gHbekdIeuU92Bz4dMw22WxNdZ4eN6DLZo0KhkllKshKGH7a2UxJ0ZD57DzGQPPkPDY4spV7riRslxwHZb7pVGq_RyWkzXVSbX4Nx4UTj3chIwmkLBXrnt7oU2mayJXqtESVZFxypHwjF_WpcB_O0As2rzIApJnXN743DVSdV6qu6WfkInmoXv7VfAFcmg2PtxnV5GNNbBM6M2rUI4OdxsKmKEefsYDRgHBjrcifHtdPmO_gK6jCoE)
+
 ```mermaid
 flowchart TD
     START([Entrar al juego]) --> ASSIGN[Asignación aleatoria<br>de equipo y letra]
-    ASSIGN --> CAPTAIN_DECISION{¿Te conviertes<br>en capitán?}
+    ASSIGN --> SEARCH[Busca a tus compañeros de equipo]
+    SEARCH --> CAPTAIN_DECISION{¿Te conviertes<br>en capitán de equipo?}
 
     CAPTAIN_DECISION -->|Sí| BECOME_CAPTAIN[Activar modo capitán<br>- genera tu QR personal]
     CAPTAIN_DECISION -->|No| SCAN_CAPTAIN[Escanea el QR del capitán<br>para empezar a jugar]
