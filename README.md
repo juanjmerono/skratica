@@ -9,7 +9,7 @@ Al inicio de una partida o ronda los jugadores son asignados aleatoriamente a un
 
 ### Equipo
 
-La primera tarea es localizar a todos los miembros de tu equipo y elegid de entre todos al capitán.
+La primera tarea es localizar a todos los miembros de tu equipo y elegir, de entre todos, al capitán.
 
 ### Capitán
 
