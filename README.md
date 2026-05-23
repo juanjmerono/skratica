@@ -28,7 +28,7 @@ Cada jugador tiene su letra y debe elegir **una sola vez** entre dos caminos:
 2. **Compartir o recopilar** — Decides si cedes tu letra o acumulas letras de otros. Esta decisión es **irreversible** durante la ronda.
 3. **Recopilar letras** — Escanea los QR de las letras que te compartan tus compañeros. Cada letra escaneada puede recibir un **bonus aleatorio**:
    - **×2L / ×3L** — Duplica/triplica el valor de la letra.
-   - **×2W / ×3W** — Duplica/triplica el valor total de la palabra.
+   - **×2P / ×3P** — Duplica/triplica el valor total de la palabra.
    - Los bonus de letra se aplican **solo** en posición **impar** (×3) o **par** (×2). Los bonus de palabra igual.
 4. **Formar la palabra** — Puedes reordenar tus letras como quieras y no estás obligado a usarlas todas para formar una palabra.
 5. **Validar** — Si la palabra existe en el diccionario, se considera válida. Es igual de justo para todos.
