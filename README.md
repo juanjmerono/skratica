@@ -50,6 +50,44 @@ El equipo con más puntos gana la ronda.
 - **No recopiles sin un plan**. Asegúrate de poder formar una palabra antes de acumular letras.
 - **No acumules de más**. Recopila solo las que necesites; si sobran tras validar la palabra, puedes volver a compartirlas.
 
+# Diagrama de flujo del juego
+
+```mermaid
+flowchart TD
+    START([Entrar al juego]) --> ASSIGN[Asignación aleatoria<br>de equipo y letra]
+    ASSIGN --> CAPTAIN_DECISION{¿Te conviertes<br>en capitán?}
+
+    CAPTAIN_DECISION -->|Sí| BECOME_CAPTAIN[Activar modo capitán<br>- genera tu QR personal]
+    CAPTAIN_DECISION -->|No| SCAN_CAPTAIN[Escanea el QR del capitán<br>para empezar a jugar]
+
+    subgraph Capitán
+        BECOME_CAPTAIN --> WAIT[Espera palabras validadas<br>de tus compañeros]
+        WAIT --> SCAN_WORD[Escanea QR de palabras<br>y acumula puntos]
+        SCAN_WORD --> MORE{¿Quedan más<br>palabras?}
+        MORE -->|Sí| WAIT
+        MORE -->|No| FINISH[Finalizar la ronda]
+        FINISH --> REVEAL[Se revela tu letra de capitán<br>x N apariciones en palabras]
+        REVEAL --> TOTAL[Suma total del equipo]
+        TOTAL --> WIN([El equipo con más<br>puntos gana la ronda])
+    end
+
+    subgraph Jugador
+        SCAN_CAPTAIN --> DECIDE{¿Compartes tu letra<br>o recopilas letras?}
+        DECIDE -->|Compartir| SHARE[Compartes tu letra<br>con un compañero]
+        SHARE --> OBSERVER[Pasas a observador<br>- tu ronda ha terminado]
+        DECIDE -->|Recopilar| COLLECT[Escanea letras que<br>te compartan otros]
+        COLLECT --> BONUS[Cada letra puede recibir<br>un bonus aleatorio]
+        BONUS --> REORDER[Reordena las letras<br>y forma una palabra]
+        REORDER --> VALIDATE{¿La palabra es<br>válida en el diccionario?}
+        VALIDATE -->|No| REORDER
+        VALIDATE -->|Sí| DELIVER[Genera QR con la palabra<br>válida y su puntuación]
+        DELIVER --> SURPLUS[Comparte letras sobrantes<br>con otros compañeros]
+        SURPLUS --> OBSERVER
+    end
+
+    OBSERVER --> WAIT
+```
+
 # Iniciar partida
 
 ## 2 equipos
@@ -66,3 +104,9 @@ El equipo con más puntos gana la ronda.
 [Iniciar Ronda 4 Equipos](https://juanjmerono.github.io/skratica/?teams=4)
 
 <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=4" alt="QR4">
+
+# Pruebas
+
+Utiliza esta página para probar el juego.
+
+[Test Game](https://juanjmerono.github.io/skratica/test.html)
