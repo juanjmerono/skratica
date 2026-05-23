@@ -1,5 +1,67 @@
-Mientras tu disfrutas de las tradicionales Paellas de ATICA, los miembros de la organización criminal EVIL están intentando vulnerar los sistemas críticos de ATICA.
+# SKRATICA
 
-Para lograrlo deben intentar descubrir la contraseña maestra del sistema, mientras que al mismo tiempo el equipo del centro de operaciones de seguridad (SOC) intenta activar el doble factor de protección para evitarlo.
+Bienvenido al clásico juego del Scrabble pero colaborativo y para ATICA.
+Cada ronda está configurada para durar dos horas, pasado ese tiempo podrás iniciar otra ronda.
 
-Se rumorea que un antiguo trabajador de ATICA conoce la contraseña y la subasta en la DeepWeb, corre antes de que acabe el tiempo.
+## LAS REGLAS
+
+Al inicio de una partida o ronda los jugadores son asignados aleatoriamente a uno de los equipos y cada uno posee una ficha con una letra y una puntuación. El número de equipos puede variar de una ronda a otra.
+
+### Equipo
+
+La primera tarea es localizar a todos los miembros de tu equipo y elegid de entre todos al capitán.
+
+### Capitán
+
+El capitán se encarga de recopilar todas las palabras formadas por los miembros del equipo con las letras que hayan recopilado entre los compañeros. Durante la ronda puede participar ayudando a sus compañeros pero como observador, su labor se limita a recopilar las palabras validadas de los compañeros de equipo y entregar el resultado final del equipo para determinar el equipo ganador de la ronda o partida.
+
+### Jugadores de equipo
+
+Cada jugador del equipo tiene en su poder una letra y debe decidir lo que hacer:
+
+- Compartir su letra con otro compañero para formar una palabra y pasar a ayudar como observador.
+- Recopilar letras de los compañeros y formar una palabra, que si es válida podrá entregar al capitán.
+
+#### Recopilar letras
+
+- Cualquier jugador puede elegir si recopila o comparte, pero una vez que comparte o recopila ya no puedes cambiar de rol durante la ronda.
+
+- Las letras recopiladas las puedes usar en cualquier orden y no estás obligado a usarlas todas para formar una palabra.
+
+- Una vez hayas reordenado tu palabra puedes validarla, si la palabra el válida tu tarea es compartir los puntos obtenidos con tu capitán y adicionalmente volver a compartir las letras que te hayan sobrado con compañeros que estén recopilando y no hayan validado ninguna palabra o no hayan recopilado ninguna letra pero tampoco compartido la suya.
+
+- La palabra será válida o no en base a un diccionario precargado, por lo que es igual de justo o injusto para todos.
+
+### Recopilar palabras
+
+- Como capitán debes recopilar los puntos de las palabras validadas de tus compañeros.
+- Una vez ya no queden más palabras por recopilar puedes finalizar la ronda para obtener el resultad final.
+- A la suma de todas las palabras se añadirá el valor de tu propia letra que como capitán NADIE ha usado.
+
+### Consejos
+
+- No compartas tu letra a menos que tengas claro que algún compañero la necesita para formar una palabra, una vez compartes ya no hay vuelta atrás.
+- No recopiles letras a menos que tengas un plan claro para recopilar todas las de una palabra.
+- No recopiles más letras de las que necesites para formar una palabra, aunque si te acaban sobrando las puedes volver a compartir.
+
+
+# INICIAR EL JUEGO
+
+## Iniciar ronda con 2 equipos
+
+[Iniciar Ronda 2 Equipos](https://juanjmerono.github.io/skratica/?teams=2)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=2" alt="QR2">
+
+## Iniciar ronda con 3 equipos
+
+[Iniciar Ronda 3 Equipos](https://juanjmerono.github.io/skratica/?teams=3)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=3" alt="QR3">
+
+## Iniciar ronda con 4 equipos
+
+[Iniciar Ronda 4 Equipos](https://juanjmerono.github.io/skratica/?teams=4)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=4" alt="QR4">
+
