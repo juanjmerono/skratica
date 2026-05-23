@@ -1,71 +1,68 @@
 # SKRATICA (El Skrabble de ATICA)
 
-Bienvenido al clásico juego del Scrabble pero colaborativo y para ATICA.
-Cada ronda está configurada para durar una hora, pasado ese tiempo podrás iniciar otra ronda.
+Scrabble colaborativo para ATICA. Cada ronda dura **1 hora** y pasado ese tiempo se puede iniciar otra.
 
-## LAS REGLAS
+## Cómo empieza
 
-Al inicio de una partida o ronda los jugadores son asignados aleatoriamente a uno de los equipos y cada uno posee una ficha con una letra y una puntuación. El número de equipos puede variar de una ronda a otra.
+Al entrar al juego se te asigna **aleatoriamente** un equipo y una **ficha con una letra** (cada letra tiene una puntuación distinta). El número de equipos lo decide el administrador al generar la ronda (2, 3 o 4 equipos).
 
-### Equipo
-
-La primera tarea es localizar a todos los miembros de tu equipo y elegir, de entre todos, al capitán.
+## Roles
 
 ### Capitán
+El equipo elige a un capitán. Su misión:
+- **Da acceso a la ronda** al resto del equipo: los jugadores escanean su QR para empezar a jugar.
+- Escanea los códigos QR de las palabras validadas por sus compañeros para sumar puntos.
+- No descubre su letra hasta el final de la ronda.
+- Cuando ya no queden más palabras que recopilar, **finaliza la ronda**. En ese momento se revela su letra y se suma su valor multiplicado por las veces que aparece en las palabras recopiladas.
 
-El capitán se encarga de recopilar todas las palabras formadas por los miembros del equipo con las letras que hayan recopilado entre los compañeros. Durante la ronda puede participar ayudando a sus compañeros pero como observador, su labor se limita a recopilar las palabras validadas de los compañeros de equipo y entregar el resultado final del equipo para determinar el equipo ganador de la ronda o partida.
+### Jugador
+Cada jugador tiene su letra y debe elegir **una sola vez** entre dos caminos:
 
-### Jugadores de equipo
+- **Compartir** su letra con otro compañero para que forme una palabra. A partir de ahí actúa como observador y ya no puede recopilar más letras.
+- **Recopilar** letras de otros compañeros para formar una palabra válida y entregarla al capitán.
 
-Cada jugador del equipo tiene en su poder una letra y debe decidir lo que hacer:
+## Cómo se juega paso a paso
 
-- Compartir su letra con otro compañero para formar una palabra y pasar a ayudar como observador.
-- Recopilar letras de los compañeros y formar una palabra, que si es válida podrá entregar al capitán.
+1. **Elegir capitán** — Un miembro de cada equipo se ofrece como capitán y pulsa el botón que le asigna ese rol, sin vuelta atrás.
+2. **Escanear al capitán** — El resto del equipo escanea el QR del capitán para empezar a jugar.
+2. **Compartir o recopilar** — Decides si cedes tu letra o acumulas letras de otros. Esta decisión es **irreversible** durante la ronda.
+3. **Recopilar letras** — Escanea los QR de las letras que te compartan tus compañeros. Cada letra escaneada puede recibir un **bonus aleatorio**:
+   - **×2L / ×3L** — Duplica/triplica el valor de la letra.
+   - **×2W / ×3W** — Duplica/triplica el valor total de la palabra.
+   - Los bonus de letra se aplican **solo** en posición **impar** (×3) o **par** (×2). Los bonus de palabra igual.
+4. **Formar la palabra** — Puedes reordenar tus letras como quieras y no estás obligado a usarlas todas para formar una palabra.
+5. **Validar** — Si la palabra existe en el diccionario, se considera válida. Es igual de justo para todos.
+6. **Entregar al capitán** — La palabra validada muestra un QR para que el capitán lo escanee.
+7. **Compartir sobrantes** — Las letras que no usaste se pueden volver a compartir con otros jugadores que sigan recopilando. Si la letra tenía un bonus, **se pierde** al compartirla (la siguiente persona que la reciba podrá obtener un bonus nuevo).
 
-#### Recopilar letras
+## Puntuación final
 
-- Cualquier jugador puede elegir si recopila o comparte, pero una vez que comparte o recopila ya no puedes cambiar de rol durante la ronda.
+Cuando el capitán da por terminada la ronda:
+- Se suma la puntuación de todas las palabras recopiladas.
+- Se revela la letra del capitán.
+- Su valor se multiplica por el número de veces que esa letra aparece en las palabras recopiladas y se añade al total.
 
-- Las letras recopiladas las puedes usar en cualquier orden y no estás obligado a usarlas todas para formar una palabra.
+El equipo con más puntos gana la ronda.
 
-- Cuando recopilas una letra se le puede asignar al azar un bonus clásico del juego, doble o triple valor de letra o doble o triple valor de palabra, que será aplicado si la letra se utiliza en una posición par o impar de la palabra según sea doble o triple el bonus asignado.
+## Consejos
 
-- Una vez hayas reordenado tu palabra puedes validarla, si la palabra el válida tu tarea es compartir los puntos obtenidos con tu capitán y adicionalmente volver a compartir las letras que te hayan sobrado con compañeros que estén recopilando y no hayan validado ninguna palabra o no hayan recopilado ninguna letra pero tampoco compartido la suya.
+- **Comparte solo si estás seguro** de que alguien necesita tu letra. No hay vuelta atrás.
+- **No recopiles sin un plan**. Asegúrate de poder formar una palabra antes de acumular letras.
+- **No acumules de más**. Recopila solo las que necesites; si sobran tras validar la palabra, puedes volver a compartirlas.
 
-- Si la letra sobrante tenía un bonus este se pierde al compartirla otra vez pero le puede ser asignado otro bonus diferente al ser recibida por otro compañero.
+# Iniciar partida
 
-- La palabra será válida o no en base a un diccionario precargado, por lo que es igual de justo o injusto para todos.
-
-### Recopilar palabras
-
-- Como capitán debes recopilar los puntos de las palabras validadas de tus compañeros.
-- Una vez ya no queden más palabras por recopilar el campitán puede finalizar la ronda para obtener el resultad final.
-- En ese momento se descubre la letra que poseía el capitán y que no ha podido compartir ni conocer hasta ese momento, y se suma su valor al de las palabras recopiladas, con el multiplicador xN de letra en función de las veces que aparece la letra en las palabras recopiladas.
-
-### Consejos
-
-- No compartas tu letra a menos que tengas claro que algún compañero la necesita para formar una palabra, una vez compartes ya no hay vuelta atrás.
-- No recopiles letras a menos que tengas un plan claro para recopilar todas las de una palabra.
-- No recopiles más letras de las que necesites para formar una palabra, aunque si te acaban sobrando las puedes volver a compartir.
-
-
-# INICIAR EL JUEGO
-
-## Iniciar ronda con 2 equipos
-
+## 2 equipos
 [Iniciar Ronda 2 Equipos](https://juanjmerono.github.io/skratica/?teams=2)
 
 <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=2" alt="QR2">
 
-## Iniciar ronda con 3 equipos
-
+## 3 equipos
 [Iniciar Ronda 3 Equipos](https://juanjmerono.github.io/skratica/?teams=3)
 
 <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=3" alt="QR3">
 
-## Iniciar ronda con 4 equipos
-
+## 4 equipos
 [Iniciar Ronda 4 Equipos](https://juanjmerono.github.io/skratica/?teams=4)
 
 <img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=4" alt="QR4">
-
