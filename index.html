@@ -353,8 +353,13 @@
       align-items: center;
       justify-content: center;
       user-select: none;
-      transition: opacity 0.3s ease;
+      cursor: pointer;
+      transition: opacity 0.3s ease, transform 0.15s ease;
       animation: fadeIn 0.3s ease forwards;
+    }
+
+    .mini-tile:hover:not(.unused) {
+      transform: translateY(-3px);
     }
 
     .mini-tile.unused {
@@ -496,33 +501,6 @@
     }
 
     /* Input de reordenación */
-    .word-input {
-      display: none;
-      width: min(90vw, 420px);
-      background: #1e1e32;
-      border: 2px solid var(--team-color);
-      border-radius: 12px;
-      padding: 14px 20px;
-      font-size: min(7vmin, 32px);
-      font-weight: 700;
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #fff;
-      text-align: center;
-      outline: none;
-      box-shadow: 0 0 16px var(--team-glow);
-      caret-color: var(--team-color);
-    }
-
-    .word-input.visible { display: block; }
-
-    .word-input::placeholder {
-      color: #6a6a8a;
-      font-size: 0.6em;
-      letter-spacing: 0.1em;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-    }
     .btn-validate {
       background: var(--accent);
       color: #fff;
@@ -549,6 +527,48 @@
       flex-wrap: wrap;
     }
 
+    .btn-reorder-back,
+    .btn-reorder-confirm {
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
+    }
+
+    .btn-reorder-back {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--text-muted);
+    }
+    .btn-reorder-back:hover  { color: #fff; border-color: #fff; }
+    .btn-reorder-back:active { transform: translateY(1px); }
+
+    .btn-reorder-confirm {
+      background: var(--team-color);
+      color: #fff;
+      border: none;
+      box-shadow: 0 0 16px var(--team-glow);
+    }
+    .btn-reorder-confirm:hover  { opacity: 0.85; }
+    .btn-reorder-confirm:active { transform: translateY(1px); }
+
+    .reorder-area {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .reorder-area.active { display: flex; }
+
+    .reorder-actions {
+      display: flex;
+      gap: 12px;
+    }
+
     .btn-reorder {
       background: transparent;
       color: var(--text-muted);
@@ -562,8 +582,7 @@
       cursor: pointer;
       transition: color 0.2s, border-color 0.2s, transform 0.1s;
     }
-
-    .btn-reorder:hover { color: #fff; border-color: #fff; }
+    .btn-reorder:hover  { color: #fff; border-color: #fff; }
     .btn-reorder:active { transform: translateY(1px); }
 
     /* ══════════════════════════════
@@ -927,15 +946,20 @@
       <span class="team-name" id="team-label-word"></span>
     </div>
     <div class="tiles-row" id="tiles-row"></div>
+    <div class="reorder-area" id="reorder-area">
+      <div class="reorder-actions">
+        <button class="btn-reorder-back"    id="btn-reorder-back">←</button>
+        <button class="btn-reorder-confirm" id="btn-reorder-confirm">✓</button>
+      </div>
+    </div>
     <div class="word-preview" id="word-preview"></div>
-    <input class="word-input" id="word-input" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="Escribe tu palabra..." />
     <div class="score-display">
       <div class="score-value" id="partial-score">0</div>
       <div class="score-label">puntos si es válida</div>
       <div class="bonus-breakdown" id="bonus-breakdown"></div>
     </div>
     <div class="word-actions">
-      <button class="btn-reorder" id="btn-reorder">Reordenar letras</button>
+      <button class="btn-reorder"  id="btn-reorder">Reordenar letras</button>
       <button class="btn-validate" id="btn-validate">Validar palabra</button>
     </div>
     <button class="btn-scan" id="btn-scan-word">
@@ -1183,6 +1207,17 @@
     function getWordLetters(){ return JSON.parse(localStorage.getItem('skratica_word') || '[]'); }
     function setWordLetters(arr){ localStorage.setItem('skratica_word', JSON.stringify(arr)); }
     function getWordBonuses(){ return JSON.parse(localStorage.getItem('skratica_word_bonus') || '[]'); }
+
+    // Devuelve skratica_word_order como string de letras (nuevo formato: JSON array de índices)
+    function getWordOrderStr(letters) {
+      const raw = localStorage.getItem('skratica_word_order');
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.map(i => letters[i].toUpperCase()).join('');
+      } catch(e) {}
+      return raw; // fallback formato antiguo
+    }
     function setWordBonuses(arr){ localStorage.setItem('skratica_word_bonus', JSON.stringify(arr)); }
 
     // Elige un bonus según la antigüedad de la ficha (en ms)
@@ -1326,6 +1361,30 @@
       applyUsageToTilesAndReturn(inputStr, allLetters);
     }
 
+    // Dado un array de índices (de letters[]), devuelve las letras y bonuses usados en ese orden exacto
+    function getUsedWithBonusesByIndices(indices, allLetters, allBonuses) {
+      const used        = indices.map(i => allLetters[i]);
+      const usedBonuses = indices.map(i => (allBonuses && allBonuses[i]) || '1');
+      return { used, usedBonuses };
+    }
+
+    // Versión inteligente: usa índices del localStorage si el formato es array JSON,
+    // sino fallback al método por string. Garantiza bonus correcto aunque haya letras duplicadas.
+    function getUsedWithBonusesSmart(allLetters, allBonuses) {
+      const raw = localStorage.getItem('skratica_word_order');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return getUsedWithBonusesByIndices(parsed, allLetters, allBonuses);
+          }
+        } catch(e) {}
+      }
+      // Fallback: buscar por string
+      const wordStr = getWordOrderStr(allLetters) || allLetters.join('');
+      return getUsedWithBonuses(wordStr, allLetters, allBonuses);
+    }
+
     // Dado un wordStr, allLetters y allBonuses, devuelve las letras y bonuses usados en orden de palabra
     function getUsedWithBonuses(wordStr, allLetters, allBonuses) {
       const wordUp = (wordStr || '').toUpperCase();
@@ -1453,41 +1512,179 @@
       }
     }
 
+    function initReorderUI(letters, bonuses) {
+      let selected = [];
+
+      // Helper: convierte skratica_word_order (array JSON de índices) a string de letras
+      function getWordOrderStr() {
+        const raw = localStorage.getItem('skratica_word_order');
+        if (!raw) return null;
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed.map(i => letters[i].toUpperCase()).join('');
+        } catch(e) {}
+        return raw; // fallback: formato antiguo era string de letras
+      }
+
+      function getWordStr() {
+        return selected.map(i => letters[i].toUpperCase()).join('');
+      }
+
+      function persist() {
+        if (selected.length) localStorage.setItem('skratica_word_order', JSON.stringify(selected));
+        else localStorage.removeItem('skratica_word_order');
+      }
+
+      function updatePreviewAndScore(wordStr) {
+        let used, usedBonuses;
+        if (wordStr !== undefined && selected.length > 0) {
+          // Modo reordenar activo: usar índices exactos para bonus correcto
+          ({ used, usedBonuses } = getUsedWithBonusesByIndices(selected, letters, bonuses));
+          document.getElementById('word-preview').textContent = wordStr.toUpperCase();
+        } else {
+          // Modo normal o sin selección: derivar desde el orden guardado
+          const word = getWordOrderStr() || letters.join('').toUpperCase();
+          document.getElementById('word-preview').textContent = word.toUpperCase();
+          // Intentar usar índices guardados si el formato es array
+          const raw = localStorage.getItem('skratica_word_order');
+          if (raw) {
+            try {
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                ({ used, usedBonuses } = getUsedWithBonusesByIndices(parsed, letters, bonuses));
+              }
+            } catch(e) {}
+          }
+          if (!used) ({ used, usedBonuses } = getUsedWithBonuses(word, letters, bonuses));
+        }
+        document.getElementById('partial-score').textContent   = calcScore(used, usedBonuses);
+        document.getElementById('bonus-breakdown').textContent = buildBonusBreakdown(used, usedBonuses);
+      }
+
+      function renderPoolNormal() {
+        // Modo normal: fichas no incluidas en el orden guardado marcadas como unused
+        const row = document.getElementById('tiles-row');
+        row.innerHTML = '';
+        const raw = localStorage.getItem('skratica_word_order');
+        let usedSet = new Set();
+        let currentWord = letters.join('').toUpperCase();
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              usedSet = new Set(parsed);
+              currentWord = parsed.map(i => letters[i].toUpperCase()).join('');
+            } else {
+              // fallback string antiguo
+              const tmpPool = letters.map((l, i) => ({ l: l.toUpperCase(), i }));
+              for (const ch of raw.toUpperCase()) {
+                const found = tmpPool.find(x => x.l === ch);
+                if (found) { usedSet.add(found.i); tmpPool.splice(tmpPool.indexOf(found), 1); }
+              }
+              currentWord = raw.toUpperCase();
+            }
+          } catch(e) { currentWord = raw.toUpperCase(); }
+        }
+
+        letters.forEach((letter, idx) => {
+          const bonus  = (bonuses && bonuses[idx]) || '1';
+          const pos    = raw ? ([...usedSet].indexOf(idx) + 1) : 0;
+          const active = bonusApplies(bonus, pos);
+          const tile   = buildMiniTile(letter, bonus, active);
+          if (raw && !usedSet.has(idx)) tile.classList.add('unused');
+          row.appendChild(tile);
+        });
+      }
+
+      function renderPoolReorder() {
+        // Modo reordenar: fichas clickables, seleccionadas en .unused
+        const selectedSet = new Set(selected);
+        const row = document.getElementById('tiles-row');
+        row.innerHTML = '';
+        letters.forEach((letter, idx) => {
+          const bonus = (bonuses && bonuses[idx]) || '1';
+          const tile  = buildMiniTile(letter, bonus, false);
+          if (selectedSet.has(idx)) tile.classList.add('unused');
+          tile.addEventListener('click', () => {
+            if (new Set(selected).has(idx)) return;
+            selected.push(idx);
+            persist();
+            renderPoolReorder();
+            updatePreviewAndScore(getWordStr());
+          });
+          row.appendChild(tile);
+        });
+      }
+
+      function enterReorderMode() {
+        // Siempre empezar con selección vacía; el usuario recompone la palabra desde cero
+        selected = [];
+
+        document.getElementById('word-preview').textContent    = '';
+        document.getElementById('partial-score').textContent   = '0';
+        document.getElementById('bonus-breakdown').textContent = '';
+
+        document.getElementById('btn-reorder').style.display = 'none';
+        document.getElementById('reorder-area').classList.add('active');
+        renderPoolReorder();
+      }
+
+      function exitReorderMode() {
+        // Si no se seleccionó ninguna letra, usar todas en orden natural
+        if (selected.length === 0) {
+          selected = letters.map((_, i) => i);
+        }
+        persist();
+        document.getElementById('reorder-area').classList.remove('active');
+        document.getElementById('btn-reorder').style.display = '';
+        renderPoolNormal();
+        updatePreviewAndScore();
+      }
+
+      // Clonar botones para limpiar listeners previos al re-entrar en la vista
+      ['btn-reorder-back', 'btn-reorder-confirm', 'btn-reorder'].forEach(id => {
+        const el = document.getElementById(id);
+        const clone = el.cloneNode(true);
+        el.replaceWith(clone);
+      });
+
+      document.getElementById('btn-reorder').addEventListener('click', enterReorderMode);
+
+      document.getElementById('btn-reorder-back').addEventListener('click', () => {
+        if (selected.length) {
+          selected.pop();
+          persist();
+          renderPoolReorder();
+          updatePreviewAndScore(getWordStr());
+        }
+      });
+
+      document.getElementById('btn-reorder-confirm').addEventListener('click', exitReorderMode);
+
+      // Renderizado inicial en modo normal
+      renderPoolNormal();
+      updatePreviewAndScore();
+    }
+
     function showWordView(teamConf, letters) {
       document.getElementById('view-normal').style.display = 'none';
-      const row     = document.getElementById('tiles-row');
       const bonuses = getWordBonuses();
 
-      // Orden activo: confirmado si existe, si no orden de acumulación
-      const currentWord = localStorage.getItem('skratica_word_order') || letters.join('');
-      document.getElementById('word-preview').textContent = currentWord.toUpperCase();
-
-      // Score con bonuses según posición actual
-      const { used: usedLetters, usedBonuses } = getUsedWithBonuses(currentWord, letters, bonuses);
-      document.getElementById('partial-score').textContent    = calcScore(usedLetters, usedBonuses);
-      document.getElementById('bonus-breakdown').textContent  = buildBonusBreakdown(usedLetters, usedBonuses);
-
-      // Reconstruir tiles con badges de bonus
-      rebuildTilesWithBonuses(row, letters, bonuses, currentWord);
-
       document.getElementById('team-label-word').textContent = teamConf.label;
-
-      // Ocultar input
-      document.getElementById('word-input').classList.remove('visible');
-      document.getElementById('word-input').value = '';
-
       document.getElementById('view-word').classList.add('active');
+
+      initReorderUI(letters, bonuses);
     }
 
     function showDoneView(teamConf, letters) {
       document.getElementById('view-normal').style.display = 'none';
       document.getElementById('view-word').classList.remove('active');
 
-      const confirmedWord = localStorage.getItem('skratica_word_order') || letters.join('');
-      const allBonuses    = getWordBonuses();
+      const allBonuses = getWordBonuses();
 
       // Letras usadas = las que forman la palabra en el orden confirmado
-      const { used: usedLetters, usedBonuses } = getUsedWithBonuses(confirmedWord, letters, allBonuses);
+      const { used: usedLetters, usedBonuses } = getUsedWithBonusesSmart(letters, allBonuses);
+      const confirmedWord = usedLetters.join('');
 
       // Letras sobrantes = las que no entraron en la palabra
       const unusedLetters = (() => {
@@ -1784,9 +1981,8 @@
     // ─────────────────────────────────────────────
 
     function getPendingSurplus(letters) {
-      const wordOrder = localStorage.getItem('skratica_word_order') || letters.join('');
       const bonuses   = getWordBonuses();
-      const { used: usedLetters } = getUsedWithBonuses(wordOrder, letters, bonuses);
+      const { used: usedLetters } = getUsedWithBonusesSmart(letters, bonuses);
       const unusedLetters = (() => {
         const p = [...letters];
         usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i, 1); });
@@ -2047,78 +2243,12 @@
       document.getElementById('tile-score').textContent        = myEntry.score;
       document.getElementById('team-label-normal').textContent = teamConf.label;
 
-      // ── Input de reordenación ──────────────────────────────────────
-      const wordInput = document.getElementById('word-input');
-
-      wordInput.addEventListener('input', () => {
-        const letters = getWordLetters();
-        const bonuses = getWordBonuses();
-        let val = wordInput.value.toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ]/gi, '');
-
-        // Filtrar: solo letras disponibles en el pool, sin exceder repeticiones
-        // Pool normalizado a mayúsculas para comparar correctamente
-        const pool = letters.map(l => l.toUpperCase());
-        let filtered = '';
-        for (const ch of val) {
-          const idx = pool.indexOf(ch);
-          if (idx !== -1) {
-            filtered += ch;
-            pool.splice(idx, 1);
-          }
-        }
-
-        if (filtered !== val) {
-          wordInput.value = filtered;
-        }
-
-        // Actualizar preview, tiles con bonus y score en tiempo real; persistir orden
-        const currentWord = filtered || letters.join('').toUpperCase();
-        document.getElementById('word-preview').textContent = currentWord;
-        if (filtered) localStorage.setItem('skratica_word_order', filtered);
-        else localStorage.removeItem('skratica_word_order');
-        const row = document.getElementById('tiles-row');
-        rebuildTilesWithBonuses(row, letters, bonuses, currentWord);
-        const { used: usedArr, usedBonuses: usedBonusArr } = getUsedWithBonuses(currentWord, letters, bonuses);
-        document.getElementById('partial-score').textContent   = calcScore(usedArr, usedBonusArr);
-        document.getElementById('bonus-breakdown').textContent = buildBonusBreakdown(usedArr, usedBonusArr);
-      });
-
-      // ── Enter en el input de reordenación confirma la edición ──
-      wordInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          document.getElementById('btn-reorder').click();
-        }
-      });
-
-      // ── Botón secundario: volver a reordenar desde estado validate ──
-      document.getElementById('btn-reorder').addEventListener('click', () => {
-        const letters = getWordLetters();
-        const isVisible = wordInput.classList.contains('visible');
-        if (isVisible) {
-          // Cerrar input: guardar orden actual
-          const input = wordInput.value.toUpperCase();
-          if (input) localStorage.setItem('skratica_word_order', input);
-          else localStorage.removeItem('skratica_word_order');
-          wordInput.classList.remove('visible');
-          showWordView(teamConf, letters);
-        } else {
-          // Abrir input con el orden actual
-          wordInput.value = localStorage.getItem('skratica_word_order') || '';
-          wordInput.classList.add('visible');
-          wordInput.focus();
-        }
-      });
-
       // ── Validar palabra ───────────────────────────────────────────
       document.getElementById('btn-validate').addEventListener('click', () => {
         const letters = getWordLetters();
         const bonuses = getWordBonuses();
-        const wordOrder = localStorage.getItem('skratica_word_order') || letters.join('');
-        const { used: usedLetters } = getUsedWithBonuses(wordOrder, letters, bonuses);
+        const { used: usedLetters } = getUsedWithBonusesSmart(letters, bonuses);
         const wordForDict = usedLetters.join('').toLowerCase();
-        // Si el input está abierto, cerrarlo primero
-        wordInput.classList.remove('visible');
 
         if (typeof WORDS_ES === 'undefined') {
           setMode('done');
