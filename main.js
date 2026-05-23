@@ -2,7 +2,7 @@
     // URL BASE PARA COMPARTIR — edita esta variable
     // ─────────────────────────────────────────────
     const SHARE_BASE_URL  = 'https://juanjmerono.github.io/skratica/';
-    const SESSION_TTL_MS  = 2 * 60 * 60 * 1000; // 2 horas
+    const SESSION_TTL_MS  = 1 * 60 * 60 * 1000; // 1 hora
     const RESET_TTL_MS    = 15 * 60 * 1000;     // 15 minutos (solo payload reset)
 
     // ─────────────────────────────────────────────
@@ -747,8 +747,9 @@
       document.getElementById('btn-surplus').style.display = pendingLetters.length > 0 ? '' : 'none';
 
       // Generar QR de palabra para que el capitán lo escanee
+      const _wordQrTs  = Date.now();
       const _wordQrId  = Math.random().toString(36).slice(2, 10);
-      const _wordQrPayload = btoa(`word,${myTeamKey},${confirmedWord},${score},${_wordQrId}`);
+      const _wordQrPayload = btoa(`word,${myTeamKey},${confirmedWord},${score},${_wordQrTs},${_wordQrId}`);
       const _wordQrUrl = `${SHARE_BASE_URL}/?tile=${_wordQrPayload}`;
       const _wordQrEl  = document.getElementById('done-word-qr-code');
       _wordQrEl.innerHTML = '';
@@ -794,23 +795,27 @@
       return { ok: true, type: 'captain' };
     }
 
-    // Valida el QR de palabra validada escaneado por el capitán (payload: "word,TEAM,WORD,SCORE,ID")
+    // Valida el QR de palabra validada escaneado por el capitán (payload: "word,TEAM,WORD,SCORE,TS,ID")
     function processCaptainWordQR(encoded, myTeamKey) {
       let payload;
       try { payload = atob(encoded); } catch {
         return { ok: false, title: 'Código no válido', msg: 'El código de palabra no se puede leer.' };
       }
       const parts = payload.split(',');
-      if (parts.length !== 5 || parts[0] !== 'word') {
+      if (parts.length !== 6 || parts[0] !== 'word') {
         return { ok: false, title: 'Código no válido', msg: 'Este no es un código de palabra validada.' };
       }
-      const [, inTeam, inWord, inScoreStr, inId] = parts;
+      const [, inTeam, inWord, inScoreStr, inTsStr, inId] = parts;
       const inScore = parseInt(inScoreStr, 10);
+      const inTs    = parseInt(inTsStr, 10);
       if (inTeam !== myTeamKey) {
         return { ok: false, title: 'Equipo incorrecto', msg: `Esta palabra es del equipo ${TEAMS[inTeam]?.label || inTeam}, no del tuyo.` };
       }
       if (!inWord || isNaN(inScore)) {
         return { ok: false, title: 'Código no válido', msg: 'El formato del código de palabra es incorrecto.' };
+      }
+      if (isNaN(inTs) || Date.now() - inTs > SESSION_TTL_MS) {
+        return { ok: false, title: 'Código caducado', msg: 'La palabra ha caducado. El equipo debe generar un nuevo código.' };
       }
       const scanned = JSON.parse(localStorage.getItem('skratica_captain_scanned') || '[]');
       if (scanned.includes(inId)) {
@@ -1159,7 +1164,7 @@
         null,
         {
           title: '¿Finalizar la ronda?',
-          msg:   'Esta acción es <strong>irreversible</strong>.<br><br>Ya no podrás escanear más palabras y se cerrará la ronda del equipo.',
+          msg:   'Esta acción es <strong>irreversible</strong>.<br><br>Ya no podrás escanear más palabras y se cerrará la ronda del equipo, a la suma actual se añadirá el valor de tu letra asignada como capitán con un multiplicador por uso.',
           yes:   'Finalizar',
         }
       );
@@ -1169,8 +1174,19 @@
       const myEntry = getOrAssignLetter();
       const words   = JSON.parse(localStorage.getItem('skratica_captain_score') || '[]');
 
+      // Contar apariciones de la letra del capitán en las palabras recopiladas
+      const count = words
+        .filter(w => !w.isCaptainLetter)
+        .reduce((sum, w) => sum + (w.word.toUpperCase().split(myEntry.letter).length - 1), 0);
+      const multiplier = 1 + count;
+      const finalScore = myEntry.score * multiplier;
+
       // Persistir la letra del capitán en el array de puntuaciones
-      words.push({ word: `Tu letra: ${myEntry.letter}`, score: myEntry.score, isCaptainLetter: true });
+      words.push({
+        word:  `Tu letra: ${myEntry.letter}` + (multiplier > 1 ? ` ×${multiplier}` : ''),
+        score: finalScore,
+        isCaptainLetter: true,
+      });
       localStorage.setItem('skratica_captain_score', JSON.stringify(words));
 
       // Renderizar listado y total (incluye ya la letra del capitán)
@@ -1529,7 +1545,7 @@
           () => showIntroView(teamConf, launchScanFromIntro, becomeCaptain),
           {
             title: '¿Eres el capitán?',
-            msg:   'Esta acción es <strong>irreversible</strong>.<br><br>Tu dispositivo quedará como capitán del equipo durante toda la partida. El resto del equipo escaneará tu QR para empezar a jugar.',
+            msg:   'Esta acción es <strong>irreversible</strong>.<br><br>Tu dispositivo quedará como capitán del equipo durante toda la ronda. El resto del equipo escaneará tu QR para empezar a jugar y tu recopilarás las palabras que te entreguen para obtener la puntuación final de tu equipo en esta ronda.',
             yes:   'Soy el capitán',
           }
         );

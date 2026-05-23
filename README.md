@@ -1,7 +1,7 @@
-# SKRATICA
+# SKRATICA (El Skrabble de ATICA)
 
 Bienvenido al clásico juego del Scrabble pero colaborativo y para ATICA.
-Cada ronda está configurada para durar dos horas, pasado ese tiempo podrás iniciar otra ronda.
+Cada ronda está configurada para durar una hora, pasado ese tiempo podrás iniciar otra ronda.
 
 ## LAS REGLAS
 
@@ -28,15 +28,19 @@ Cada jugador del equipo tiene en su poder una letra y debe decidir lo que hacer:
 
 - Las letras recopiladas las puedes usar en cualquier orden y no estás obligado a usarlas todas para formar una palabra.
 
+- Cuando recopilas una letra se le puede asignar al azar un bonus clásico del juego, doble o triple valor de letra o doble o triple valor de palabra, que será aplicado si la letra se utiliza en una posición par o impar de la palabra según sea doble o triple el bonus asignado.
+
 - Una vez hayas reordenado tu palabra puedes validarla, si la palabra el válida tu tarea es compartir los puntos obtenidos con tu capitán y adicionalmente volver a compartir las letras que te hayan sobrado con compañeros que estén recopilando y no hayan validado ninguna palabra o no hayan recopilado ninguna letra pero tampoco compartido la suya.
+
+- Si la letra sobrante tenía un bonus este se pierde al compartirla otra vez pero le puede ser asignado otro bonus diferente al ser recibida por otro compañero.
 
 - La palabra será válida o no en base a un diccionario precargado, por lo que es igual de justo o injusto para todos.
 
 ### Recopilar palabras
 
 - Como capitán debes recopilar los puntos de las palabras validadas de tus compañeros.
-- Una vez ya no queden más palabras por recopilar puedes finalizar la ronda para obtener el resultad final.
-- A la suma de todas las palabras se añadirá el valor de tu propia letra que como capitán NADIE ha usado.
+- Una vez ya no queden más palabras por recopilar el campitán puede finalizar la ronda para obtener el resultad final.
+- En ese momento se descubre la letra que poseía el capitán y que no ha podido compartir ni conocer hasta ese momento, y se suma su valor al de las palabras recopiladas, con el multiplicador xN de letra en función de las veces que aparece la letra en las palabras recopiladas.
 
 ### Consejos
 
