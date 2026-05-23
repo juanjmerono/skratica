@@ -271,6 +271,49 @@
     }
 
     /* ══════════════════════════════
+       VISTA INTRO
+    ══════════════════════════════ */
+    #view-intro {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    #view-intro.active { display: flex; }
+
+    .intro-message {
+      font-size: min(5vmin, 22px);
+      font-weight: 500;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 340px;
+    }
+
+    .btn-start {
+      background: var(--team-color);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 18px 48px;
+      font-size: min(4.5vmin, 20px);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 32px var(--team-glow);
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn-start:hover  { opacity: 0.88; }
+    .btn-start:active { transform: translateY(1px); }
+
+    /* ══════════════════════════════
        VISTA PALABRA
     ══════════════════════════════ */
     #view-word {
@@ -345,7 +388,7 @@
     /* Badge de bonus en mini-tile */
     .mini-tile-bonus {
       position: absolute;
-      bottom: 3px;
+      top: 3px;
       left: 3px;
       font-size: min(2.8vmin, 12px);
       font-weight: 700;
@@ -809,6 +852,16 @@
     <p id="session-next"></p>
   </header>
 
+  <!-- ── Vista intro (pantalla de inicio) ── -->
+  <div id="view-intro">
+    <div class="team-block">
+      <span class="team-heading">Equipo</span>
+      <span class="team-name" id="team-label-intro"></span>
+    </div>
+    <p class="intro-message">Busca a tus colegas de equipo para empezar a jugar</p>
+    <button class="btn-start" id="btn-start">Empezar</button>
+  </div>
+
   <!-- ── Vista normal (ficha propia) ── -->
   <div id="view-normal">
     <div class="tile-wrapper" id="tile-wrapper">
@@ -878,7 +931,7 @@
     <input class="word-input" id="word-input" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="Escribe tu palabra..." />
     <div class="score-display">
       <div class="score-value" id="partial-score">0</div>
-      <div class="score-label">puntos acumulados</div>
+      <div class="score-label">puntos si es válida</div>
       <div class="bonus-breakdown" id="bonus-breakdown"></div>
     </div>
     <div class="word-actions">
@@ -951,7 +1004,7 @@
     // URL BASE PARA COMPARTIR — edita esta variable
     // ─────────────────────────────────────────────
     const SHARE_BASE_URL  = 'https://juanjmerono.github.io/skratica/';
-    const SESSION_TTL_MS  = 12 * 60 * 60 * 1000; // 12 horas
+    const SESSION_TTL_MS  = 2 * 60 * 60 * 1000; // 2 horas
 
     // ─────────────────────────────────────────────
     // CONFIGURACIÓN DE LETRAS
@@ -1125,7 +1178,7 @@
       return team;
     }
 
-    function getMode()       { return localStorage.getItem('skratica_mode') || 'normal'; }
+    function getMode()       { return localStorage.getItem('skratica_mode') || 'intro'; }
     function setMode(m)      { localStorage.setItem('skratica_mode', m); }
     function getWordLetters(){ return JSON.parse(localStorage.getItem('skratica_word') || '[]'); }
     function setWordLetters(arr){ localStorage.setItem('skratica_word', JSON.stringify(arr)); }
@@ -1374,6 +1427,7 @@
     // ─────────────────────────────────────────────
     function showError(title, msg, onClose) {
       document.getElementById('view-normal').style.display = 'none';
+      document.getElementById('view-intro').classList.remove('active');
       document.getElementById('view-word').classList.remove('active');
       document.getElementById('view-done').classList.remove('active');
       document.getElementById('error-title').textContent = title;
@@ -1388,6 +1442,15 @@
         if (onClose) onClose();
       };
       closeBtn.addEventListener('click', handler);
+    }
+
+    function showIntroView(teamConf, onStart) {
+      document.getElementById('view-normal').style.display = 'none';
+      document.getElementById('team-label-intro').textContent = teamConf.label;
+      document.getElementById('view-intro').classList.add('active');
+      if (onStart) {
+        document.getElementById('btn-start').addEventListener('click', onStart, { once: true });
+      }
     }
 
     function showWordView(teamConf, letters) {
@@ -1527,6 +1590,14 @@
       }
 
       // Validar estado del receptor
+      if (myMode === 'intro') {
+        return {
+          ok: false,
+          title: 'Aún no has empezado',
+          msg: 'Pulsa "Empezar" antes de escanear la ficha de un compañero.',
+        };
+      }
+
       if (myMode === 'sharing') {
         return {
           ok: false,
@@ -1962,6 +2033,13 @@
       const myMode    = getMode();
       const teamConf  = TEAMS[myTeamKey];
 
+      const startGame = () => {
+        setMode('normal');
+        document.getElementById('view-intro').classList.remove('active');
+        document.getElementById('view-normal').style.display = '';
+        initShareMode(myEntry, myTeamKey, teamConf);
+      };
+
       applyTeamCSS(teamConf);
 
       // Siempre rellenar la ficha propia (puede estar oculta pero debe estar lista)
@@ -2003,6 +2081,14 @@
         const { used: usedArr, usedBonuses: usedBonusArr } = getUsedWithBonuses(currentWord, letters, bonuses);
         document.getElementById('partial-score').textContent   = calcScore(usedArr, usedBonusArr);
         document.getElementById('bonus-breakdown').textContent = buildBonusBreakdown(usedArr, usedBonusArr);
+      });
+
+      // ── Enter en el input de reordenación confirma la edición ──
+      wordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('btn-reorder').click();
+        }
       });
 
       // ── Botón secundario: volver a reordenar desde estado validate ──
@@ -2099,7 +2185,8 @@
 
           if (!result.ok) {
             showError(result.title, result.msg, () => {
-              if (currentMode === 'word') showWordView(teamConf, getWordLetters());
+              if (currentMode === 'intro') showIntroView(teamConf, startGame);
+              else if (currentMode === 'word') showWordView(teamConf, getWordLetters());
               else document.getElementById('view-normal').style.display = '';
             });
             return;
@@ -2207,6 +2294,8 @@
               if (savedUrl && !qrGenerated) renderQR(savedUrl, teamConf);
               showQRPanel(myEntry);
             };
+          } else if (myMode === 'intro') {
+            onClose = () => showIntroView(teamConf, startGame);
           } else {
             onClose = () => { document.getElementById('view-normal').style.display = ''; };
           }
@@ -2239,6 +2328,11 @@
       }
 
       // Sin parámetro — usar modo persistido
+      if (myMode === 'intro') {
+        showIntroView(teamConf, startGame);
+        return;
+      }
+
       if (myMode === 'word') {
         const letters = getWordLetters();
         showWordView(teamConf, letters);
