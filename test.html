@@ -169,6 +169,12 @@
       margin-bottom: 4px;
     }
 
+    .team-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
     .btn-action {
       width: 100%;
       border: none;
@@ -184,6 +190,14 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
+    }
+
+    .btn-action.small {
+      padding: 10px 6px;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      border-radius: 10px;
+      flex: 1;
     }
 
     .btn-action:hover  { opacity: 0.85; }
@@ -397,18 +411,26 @@
   <div id="view-actions">
     <div class="actions-title">Generar código QR</div>
 
-    <button class="btn-action team-a" id="btn-tile-a">
-      Letra aleatoria — Equipo Rojo
-    </button>
-    <button class="btn-action team-b" id="btn-tile-b">
-      Letra aleatoria — Equipo Azul
-    </button>
-    <button class="btn-action team-c" id="btn-tile-c">
-      Letra aleatoria — Equipo Verde
-    </button>
-    <button class="btn-action team-d" id="btn-tile-d">
-      Letra aleatoria — Equipo Amarillo
-    </button>
+    <div class="team-row">
+      <button class="btn-action small team-a" data-action="captain" data-team="A">Capitán</button>
+      <button class="btn-action small team-a" data-action="tile" data-team="A">Letra</button>
+      <button class="btn-action small team-a" data-action="word" data-team="A">Palabra</button>
+    </div>
+    <div class="team-row">
+      <button class="btn-action small team-b" data-action="captain" data-team="B">Capitán</button>
+      <button class="btn-action small team-b" data-action="tile" data-team="B">Letra</button>
+      <button class="btn-action small team-b" data-action="word" data-team="B">Palabra</button>
+    </div>
+    <div class="team-row">
+      <button class="btn-action small team-c" data-action="captain" data-team="C">Capitán</button>
+      <button class="btn-action small team-c" data-action="tile" data-team="C">Letra</button>
+      <button class="btn-action small team-c" data-action="word" data-team="C">Palabra</button>
+    </div>
+    <div class="team-row">
+      <button class="btn-action small team-d" data-action="captain" data-team="D">Capitán</button>
+      <button class="btn-action small team-d" data-action="tile" data-team="D">Letra</button>
+      <button class="btn-action small team-d" data-action="word" data-team="D">Palabra</button>
+    </div>
 
     <div class="actions-divider"></div>
 
@@ -444,6 +466,24 @@
     // Para cambiar la contraseña, calcular sha256("nueva_clave") y actualizar aquí.
     // ─────────────────────────────────────────────
     const ADMIN_HASH = '844c46155585f412cb6ae197236ace200dd264cb5659ac9469383ba46afafd2d';
+    const SESSION_KEY = 'skratica_admin_session';
+    const SESSION_TTL = 30 * 60 * 1000; // 30 minutos
+
+    function unlockAdmin() {
+      document.getElementById('view-login').style.display = 'none';
+      document.getElementById('view-actions').classList.add('active');
+    }
+
+    // Comprobar sesión guardada al cargar
+    (function checkSavedSession() {
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw) return;
+        const { hash, ts } = JSON.parse(raw);
+        if (hash === ADMIN_HASH && Date.now() - ts < SESSION_TTL) unlockAdmin();
+        else localStorage.removeItem(SESSION_KEY);
+      } catch { localStorage.removeItem(SESSION_KEY); }
+    })();
 
     // ─────────────────────────────────────────────
     // LETRAS (misma configuración que index.html)
@@ -650,9 +690,47 @@
       });
     }
 
-    // ─────────────────────────────────────────────
-    // EVENTOS
-    // ─────────────────────────────────────────────
+    async function generateWordQR(teamKey) {
+      const teamConf  = TEAMS[teamKey];
+      const timestamp = await getNetworkTime();
+      const word      = 'TEST';
+      const score     = 10;
+      const id        = Math.random().toString(36).slice(2, 10);
+      const encoded   = btoa(`word,${teamKey},${word},${score},${id}`);
+      const url       = `${SHARE_BASE_URL}?tile=${encoded}`;
+
+      showQR({
+        url,
+        timestamp,
+        colorDark:   teamConf.qrColor,
+        boxClass:    teamConf.boxClass,
+        label:       `Palabra validada — Equipo ${teamConf.label}`,
+        note:        `Simula una palabra "<strong style="color:var(${teamConf.cssVar})">${word}</strong>" con <strong>${score} pts</strong> para el equipo ${teamConf.label}.<br>Escanéalo desde la vista del capitán.`,
+        urgentClass: teamConf.urgentClass,
+        badgeEntry:  null,
+        teamClass:   teamConf.teamClass,
+      });
+    }
+
+    async function generateCaptainQR(teamKey) {
+      const teamConf  = TEAMS[teamKey];
+      const timestamp = await getNetworkTime();
+      const id        = Math.random().toString(36).slice(2, 10);
+      const encoded   = btoa(`captain,${teamKey},${timestamp},${id}`);
+      const url       = `${SHARE_BASE_URL}?tile=${encoded}`;
+
+      showQR({
+        url,
+        timestamp,
+        colorDark:   teamConf.qrColor,
+        boxClass:    teamConf.boxClass,
+        label:       `QR de capitán — Equipo ${teamConf.label}`,
+        note:        `Este código identifica al capitán del equipo ${teamConf.label}.<br>Escanéalo desde la vista de introducción de otro dispositivo.`,
+        urgentClass: teamConf.urgentClass,
+        badgeEntry:  null,
+        teamClass:   teamConf.teamClass,
+      });
+    }
     document.getElementById('btn-login').addEventListener('click', async () => {
       const input    = document.getElementById('password-input');
       const errorEl  = document.getElementById('error-msg');
@@ -674,11 +752,11 @@
         return;
       }
 
-      // Login correcto: mostrar panel de acciones
+      // Login correcto: guardar sesión y mostrar panel de acciones
       errorEl.textContent = '';
       input.classList.remove('error');
-      document.getElementById('view-login').style.display = 'none';
-      document.getElementById('view-actions').classList.add('active');
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ hash: ADMIN_HASH, ts: Date.now() }));
+      unlockAdmin();
     });
 
     document.getElementById('password-input').addEventListener('keydown', (e) => {
@@ -691,11 +769,16 @@
     });
 
     document.getElementById('btn-reset').addEventListener('click',  () => generateResetQR());
-    document.getElementById('btn-tile-a').addEventListener('click', () => generateTileQR('A'));
-    document.getElementById('btn-tile-b').addEventListener('click', () => generateTileQR('B'));
-    document.getElementById('btn-tile-c').addEventListener('click', () => generateTileQR('C'));
-    document.getElementById('btn-tile-d').addEventListener('click', () => generateTileQR('D'));
     document.getElementById('btn-back').addEventListener('click',   backToActions);
+
+    document.getElementById('view-actions').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const { action, team } = btn.dataset;
+      if (action === 'tile')    generateTileQR(team);
+      if (action === 'word')    generateWordQR(team);
+      if (action === 'captain') generateCaptainQR(team);
+    });
   </script>
 </body>
 </html>
