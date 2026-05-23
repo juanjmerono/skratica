@@ -657,10 +657,15 @@
 
     #view-confirm {
       display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 20px;
-      max-width: 340px;
+      padding: 32px 24px;
+      background: var(--bg, #1a1a2e);
       text-align: center;
       animation: fadeIn 0.3s ease forwards;
     }
@@ -1909,7 +1914,6 @@
     }
 
     function showConfirm(onConfirm, onCancel) {
-      document.getElementById('view-normal').style.display = 'none';
       document.getElementById('view-confirm').classList.add('active');
 
       const yes = document.getElementById('btn-confirm-yes');
@@ -1923,18 +1927,13 @@
       function onYes() {
         cleanup();
         document.getElementById('view-confirm').classList.remove('active');
-        document.getElementById('view-normal').style.display = '';
         onConfirm();
       }
 
       function onNo() {
         cleanup();
         document.getElementById('view-confirm').classList.remove('active');
-        if (onCancel) {
-          onCancel();
-        } else {
-          document.getElementById('view-normal').style.display = '';
-        }
+        if (onCancel) onCancel();
       }
 
       yes.addEventListener('click', onYes);
@@ -2092,10 +2091,7 @@
           });
 
           showSurplusQRPanel(entryObj, teamConf, teamKey, letters);
-        }, () => {
-          // Cancelar: volver a done sin mostrar view-normal
-          document.getElementById('view-done').classList.add('active');
-        });
+        }, () => { /* cancelar: view-done sigue visible, no hace falta nada */ });
       });
     }
 
