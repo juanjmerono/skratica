@@ -35,8 +35,8 @@
       { letter: 'Z',  score: 10, weight: 1  },
     ];
 
-    // Equipos: clave interna A/B, nombre y colores configurables libremente
-    const TEAMS = {
+    // Equipos: clave interna A/B/C/D, nombre y colores configurables libremente
+    const TEAMS_POOL = {
       A: {
         label:      'Rojo',
         color:      '#e05252',
@@ -70,6 +70,7 @@
         qrColor:    '#000000',
       },
     };
+    let TEAMS = {};
 
     // ─────────────────────────────────────────────
     // HELPERS
@@ -122,11 +123,11 @@
     // ─────────────────────────────────────────────
 
     // Devuelve el label de sesión basado en la hora UTC del created_at
-    function getSessionLabel(created) {
+    function getSessionLabel(created, teamCount) {
       const startHour = new Date(created).getUTCHours();
       const hoursLeft = Math.max(1, Math.ceil((created + SESSION_TTL_MS - Date.now()) / 3600000));
       return {
-        current: `Game${String(startHour).padStart(2, '0')}`,
+        current: `Game ${String(teamCount).padStart(2, '0')} · ${String(startHour).padStart(2, '0')}h`,
         next:    `next game in ${hoursLeft}h`,
       };
     }
@@ -153,6 +154,7 @@
          'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
          'skratica_used_tiles','skratica_created_at',
          'skratica_captain','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
+         'skratica_team_count',
         ].forEach(k => localStorage.removeItem(k));
         location.reload();
         return;
@@ -179,6 +181,24 @@
       const team = keys[Math.floor(Math.random() * keys.length)];
       localStorage.setItem('skratica_team', team);
       return team;
+    }
+
+    function resolveTeamCount() {
+      const saved = localStorage.getItem('skratica_team_count');
+      if (saved) {
+        const n = parseInt(saved, 10);
+        if (n >= 2 && n <= 4) return n;
+      }
+      const params = new URLSearchParams(location.search);
+      const fromUrl = params.get('teams');
+      if (fromUrl) {
+        const n = parseInt(fromUrl, 10);
+        if (n >= 2 && n <= 4) {
+          localStorage.setItem('skratica_team_count', n);
+          return n;
+        }
+      }
+      return 4;
     }
 
     function getMode()       { return localStorage.getItem('skratica_mode') || 'intro'; }
@@ -1418,13 +1438,14 @@
 
       const tile  = url.searchParams.get('tile');
       const reset = url.searchParams.get('reset');
+      const teams = url.searchParams.get('teams');
 
       if (!tile && !reset) return false;
 
       // Es una URL válida — parar escáner y notificar
       const cb = _scanCallback;
       stopScanner();
-      if (cb) cb({ tile, reset });
+      if (cb) cb({ tile, reset, teams });
       return true;
     }
 
@@ -1441,10 +1462,12 @@
     (async function init() {
       // Comprobar TTL de sesión antes de leer ningún otro valor del storage
       const createdAt = await checkAndResetIfExpired();
+      const teamCount = resolveTeamCount();
+      TEAMS = Object.fromEntries(Object.entries(TEAMS_POOL).slice(0, teamCount));
 
       // Renderizar identificador de sesión
       if (createdAt) {
-        const { current, next } = getSessionLabel(createdAt);
+        const { current, next } = getSessionLabel(createdAt, teamCount);
         document.getElementById('session-label').textContent = current;
         document.getElementById('session-next').textContent  = next;
       }
@@ -1551,7 +1574,7 @@
       document.getElementById('btn-scan-cancel').addEventListener('click', () => stopScanner());
 
       // ── Función común para procesar resultado escaneado (tile o reset) ──
-      async function handleScannedPayload({ tile, reset }) {
+      async function handleScannedPayload({ tile, reset, teams }) {
         if (reset) {
           let resetValid = false;
           try {
@@ -1570,7 +1593,12 @@
              'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
              'skratica_used_tiles','skratica_created_at',
              'skratica_captain','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
+             'skratica_team_count',
             ].forEach(k => localStorage.removeItem(k));
+            if (teams) {
+              const n = parseInt(teams, 10);
+              if (n >= 2 && n <= 4) localStorage.setItem('skratica_team_count', n);
+            }
             location.reload();
           } else {
             const currentMode = getMode();
@@ -1645,6 +1673,8 @@
       const resetEncoded = params.get('reset');
 
       if (resetEncoded) {
+        // Leer ?teams= antes de limpiar la URL
+        const teamsAtReset = params.get('teams');
         // Limpiar parámetro de la URL inmediatamente
         history.replaceState(null, '', window.location.pathname);
 
@@ -1670,7 +1700,13 @@
             'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
             'skratica_used_tiles','skratica_created_at',
             'skratica_captain','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
+            'skratica_team_count',
            ].forEach(k => localStorage.removeItem(k));
+          // Restaurar team count si venía en la URL del reset
+          if (teamsAtReset) {
+            const n = parseInt(teamsAtReset, 10);
+            if (n >= 2 && n <= 4) localStorage.setItem('skratica_team_count', n);
+          }
           location.reload();
           return;
         } else {

@@ -434,9 +434,12 @@
 
     <div class="actions-divider"></div>
 
-    <button class="btn-action reset" id="btn-reset">
-      Reset de partida
-    </button>
+    <div class="actions-title" style="margin-top:4px">Resetear partida</div>
+    <div class="team-row">
+      <button class="btn-action reset small" id="btn-reset-2">2 equipos</button>
+      <button class="btn-action reset small" id="btn-reset-3">3 equipos</button>
+      <button class="btn-action reset small" id="btn-reset-4">4 equipos</button>
+    </div>
   </div>
 
   <!-- ── Vista: QR generado ── -->
@@ -650,18 +653,19 @@
     // ─────────────────────────────────────────────
     // GENERADORES
     // ─────────────────────────────────────────────
-    async function generateResetQR() {
+    async function generateResetQR(teamCount) {
       const timestamp = await getNetworkTime();
       const encoded   = btoa(`reset,${timestamp}`);
-      const url       = `${SHARE_BASE_URL}?reset=${encoded}`;
+      const teamsParam = teamCount !== 4 ? `teams=${teamCount}&` : '';
+      const url       = `${SHARE_BASE_URL}?${teamsParam}reset=${encoded}`;
 
       showQR({
         url,
         timestamp,
         colorDark:   '#000000',
         boxClass:    'type-reset',
-        label:       'Escanea para resetear la partida',
-        note:        'Este código es válido <strong style="color:var(--danger)">30 segundos</strong>.<br>Al escanearlo se borrará el progreso del jugador.',
+        label:       teamCount !== 4 ? `Reset ${teamCount} equipos` : 'Reset 4 equipos',
+        note:        `Reinicia la partida con <strong>${teamCount} equipo${teamCount > 1 ? 's' : ''}</strong>. Código válido <strong style="color:var(--danger)">30 segundos</strong>.`,
         urgentClass: 'urgent-reset',
         badgeEntry:  null,
         teamClass:   '',
@@ -768,7 +772,9 @@
       document.getElementById('error-msg').textContent = '';
     });
 
-    document.getElementById('btn-reset').addEventListener('click',  () => generateResetQR());
+    document.getElementById('btn-reset-2').addEventListener('click', () => generateResetQR(2));
+    document.getElementById('btn-reset-3').addEventListener('click', () => generateResetQR(3));
+    document.getElementById('btn-reset-4').addEventListener('click', () => generateResetQR(4));
     document.getElementById('btn-back').addEventListener('click',   backToActions);
 
     document.getElementById('view-actions').addEventListener('click', (e) => {
