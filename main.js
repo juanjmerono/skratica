@@ -125,11 +125,16 @@
 
     // Devuelve el label de sesión basado en la hora UTC del created_at
     function getSessionLabel(created, teamCount) {
-      const startHour = new Date(created).getUTCHours();
-      const hoursLeft = Math.max(1, Math.ceil((created + SESSION_TTL_MS - Date.now()) / 3600000));
+      const remainingMs = created + SESSION_TTL_MS - Date.now();
+      let next;
+      if (remainingMs >= 3600000) {
+        next = `next game in ${Math.ceil(remainingMs / 3600000)}h`;
+      } else {
+        next = `next game in ${Math.max(1, Math.ceil(remainingMs / 60000))}m`;
+      }
       return {
-        current: `Game ${String(teamCount).padStart(2, '0')} · ${String(startHour).padStart(2, '0')}h`,
-        next:    `next game in ${hoursLeft}h`,
+        current: `Game ${String(teamCount).padStart(2, '0')}`,
+        next,
       };
     }
 
@@ -199,6 +204,7 @@
           return n;
         }
       }
+      localStorage.setItem('skratica_team_count', 4);
       return 4;
     }
 
