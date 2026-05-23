@@ -587,7 +587,11 @@
           return;
         }
 
-        el.textContent = `0:${String(secs).padStart(2, '0')}`;
+        const mins = Math.floor(secs / 60);
+        const ss = secs % 60;
+        el.textContent = mins > 0
+          ? `${mins}:${String(ss).padStart(2, '0')}`
+          : `0:${String(ss).padStart(2, '0')}`;
         if (secs <= 10) el.classList.add(urgentClass);
         else            el.classList.remove(urgentClass);
       }
@@ -599,8 +603,8 @@
     // ─────────────────────────────────────────────
     // MOSTRAR PANEL QR
     // ─────────────────────────────────────────────
-    function showQR({ url, timestamp, colorDark, boxClass, label, note, urgentClass, badgeEntry, teamClass, letterColor }) {
-      const expiresAt = timestamp + 30000;
+    function showQR({ url, timestamp, colorDark, boxClass, label, note, urgentClass, badgeEntry, teamClass, letterColor, duration }) {
+      const expiresAt = timestamp + (duration || 30000);
 
       // Generar QR
       const el = document.getElementById('qr-code');
@@ -665,10 +669,11 @@
         colorDark:   '#000000',
         boxClass:    'type-reset',
         label:       teamCount !== 4 ? `Reset ${teamCount} equipos` : 'Reset 4 equipos',
-        note:        `Reinicia la partida con <strong>${teamCount} equipo${teamCount > 1 ? 's' : ''}</strong>. Código válido <strong style="color:var(--danger)">30 segundos</strong>.`,
+        note:        `Reinicia la partida con <strong>${teamCount} equipo${teamCount > 1 ? 's' : ''}</strong>. Código válido <strong style="color:var(--danger)">15 minutos</strong>.`,
         urgentClass: 'urgent-reset',
         badgeEntry:  null,
         teamClass:   '',
+        duration:    15 * 60 * 1000,
       });
     }
 

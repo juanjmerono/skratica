@@ -3,6 +3,7 @@
     // ─────────────────────────────────────────────
     const SHARE_BASE_URL  = 'https://juanjmerono.github.io/skratica/';
     const SESSION_TTL_MS  = 2 * 60 * 60 * 1000; // 2 horas
+    const RESET_TTL_MS    = 15 * 60 * 1000;     // 15 minutos (solo payload reset)
 
     // ─────────────────────────────────────────────
     // CONFIGURACIÓN DE LETRAS
@@ -1582,7 +1583,7 @@
             if (resetParts.length === 2 && resetParts[0] === 'reset') {
               const resetTs  = parseInt(resetParts[1], 10);
               const resetAge = Date.now() - resetTs;
-              if (!isNaN(resetTs) && resetAge >= 0 && resetAge <= 40000) resetValid = true;
+              if (!isNaN(resetTs) && resetAge >= 0 && resetAge <= RESET_TTL_MS) resetValid = true;
             }
           } catch { /* payload inválido */ }
 
@@ -1607,6 +1608,9 @@
               'El código de reset ha caducado o no es válido.',
               () => {
                 if (currentMode === 'word') showWordView(teamConf, getWordLetters());
+                else if (currentMode === 'done') showDoneView(teamConf, getWordLetters(), myTeamKey);
+                else if (currentMode === 'captain') showCaptainView(teamConf, myTeamKey);
+                else if (currentMode === 'intro') showIntroView(teamConf, launchScanFromIntro, becomeCaptain);
                 else document.getElementById('view-normal').style.display = 'flex';
               }
             );
@@ -1686,7 +1690,7 @@
           if (resetParts.length === 2 && resetParts[0] === 'reset') {
             const resetTs = parseInt(resetParts[1], 10);
             const resetAge = Date.now() - resetTs;
-            if (!isNaN(resetTs) && resetAge >= 0 && resetAge <= 40000) {
+            if (!isNaN(resetTs) && resetAge >= 0 && resetAge <= RESET_TTL_MS) {
               resetValid = true;
             }
           }
@@ -1713,7 +1717,13 @@
           showError(
             'Código de reset inválido',
             'El código de reset ha caducado o no es válido. Genera un nuevo código desde la página de administración.',
-            () => { document.getElementById('view-normal').style.display = 'flex'; }
+            () => {
+              if (myMode === 'word') showWordView(teamConf, getWordLetters());
+              else if (myMode === 'done') showDoneView(teamConf, getWordLetters(), myTeamKey);
+              else if (myMode === 'captain') showCaptainView(teamConf, myTeamKey);
+              else if (myMode === 'intro') showIntroView(teamConf, launchScanFromIntro, becomeCaptain);
+              else document.getElementById('view-normal').style.display = 'flex';
+            }
           );
           return;
         }
@@ -1837,6 +1847,7 @@
       }
 
       // Modo normal o sharing — mostrar ficha propia
+      document.getElementById('view-normal').style.display = 'flex';
       if (myMode === 'sharing') {
         // Ya estaba compartiendo — no puede acumular, no mostrar hint
         document.querySelector('.hints').style.display = 'none';
