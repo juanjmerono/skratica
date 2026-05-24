@@ -4,7 +4,7 @@ Scrabble colaborativo para ATICA. Cada ronda dura **1 hora** y pasado ese tiempo
 
 ## Cómo empieza
 
-Al entrar al juego se te asigna **aleatoriamente** un equipo y una **ficha con una letra** (cada letra tiene una puntuación distinta). El número de equipos lo decide el administrador al generar la ronda (2, 3 o 4 equipos).
+Al entrar al juego se te asigna **aleatoriamente** un equipo y una **letra** (cada letra tiene una puntuación distinta). El número de equipos lo decide el administrador al generar la ronda (2, 3 o 4 equipos).
 
 ## Roles
 

@@ -49,7 +49,7 @@
     <button class="btn-action btn-action--secondary" id="btn-captain-finish">Finalizar ronda</button>
   </div>
 
-  <!-- ── Vista normal (ficha propia) ── -->
+  <!-- ── Vista normal (letra propia) ── -->
   <div id="view-normal" style="display:none">
     <div class="tile-wrapper" id="tile-wrapper">
       <div class="tile" id="tile">
@@ -76,7 +76,7 @@
           <path d="M9 11V6a3 3 0 0 1 6 0v5"/>
           <path d="M9 11H7a2 2 0 0 0-2 2v1a8 8 0 0 0 8 8 8 8 0 0 0 8-8v-1a2 2 0 0 0-2-2h-2"/>
         </svg>
-        Pulsa la ficha para compartir
+        Pulsa la letra para compartir
       </span>
       <div class="hints-divider"></div>
       <span class="hint hint--scan" id="hint-scan">
@@ -87,7 +87,7 @@
           <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
           <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
         </svg>
-        Escanea la ficha compartida de un compañero para formar una palabra
+        Escanea la letra compartida de un compañero y forma una palabra
       </span>
       <div class="hints-divider"></div>
       <button class="btn-scan" id="btn-scan">
@@ -98,7 +98,7 @@
           <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
           <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
         </svg>
-        Escanear ficha
+        Escanear letra
       </button>
     </div>
     <div class="team-block">
@@ -138,7 +138,7 @@
         <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
         <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
       </svg>
-      Escanear ficha
+      Escanear letra
     </button>
   </div>
 
@@ -166,10 +166,10 @@
   <!-- ── Diálogo confirmación compartir ── -->
   <div id="view-confirm">
     <div class="confirm-icon">⚠️</div>
-    <div class="confirm-title" id="confirm-title">¿Compartir tu ficha?</div>
+    <div class="confirm-title" id="confirm-title">¿Compartir tu letra?</div>
     <div class="confirm-msg" id="confirm-msg">
-      Compartir tu ficha <strong>es una acción irreversible</strong>.<br><br>
-      Otro miembro de tu equipo tendrá <strong>30 segundos</strong> para escanear el QR de tu ficha y podrá recibir un bonus.
+      Compartir tu letra <strong>es una acción irreversible</strong>.<br><br>
+      Otro miembro de tu equipo tendrá <strong>30 segundos</strong> para escanear el QR de tu letra y podrá recibir un bonus.
     </div>
     <div class="confirm-buttons">
       <button class="btn-confirm-no"  id="btn-confirm-no">Cancelar</button>
@@ -180,7 +180,7 @@
   <!-- ── Vista error ── -->
   <div id="view-error">
     <div class="error-icon" id="error-close" title="Volver">✕</div>
-    <div class="error-title" id="error-title">Ficha no válida</div>
+    <div class="error-title" id="error-title">Letra no válida</div>
     <div class="error-msg"   id="error-msg"></div>
   </div>
 

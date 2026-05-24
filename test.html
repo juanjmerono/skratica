@@ -154,7 +154,7 @@
       align-items: center;
       gap: 16px;
       width: 100%;
-      max-width: 320px;
+      max-width: 360px;
       animation: fadeIn 0.5s ease forwards;
     }
 
@@ -295,7 +295,7 @@
       display: block;
     }
 
-    /* Ficha hint superpuesta en el centro del QR (igual que index.html) */
+    /* Letra hint superpuesta en el centro del QR (igual que index.html) */
     .qr-tile-hint {
       position: absolute;
       top: 50%;
@@ -436,6 +436,7 @@
 
     <div class="actions-title" style="margin-top:4px">Resetear partida</div>
     <div class="team-row">
+      <button class="btn-action reset small" id="btn-reset-1">1 equipo</button>
       <button class="btn-action reset small" id="btn-reset-2">2 equipos</button>
       <button class="btn-action reset small" id="btn-reset-3">3 equipos</button>
       <button class="btn-action reset small" id="btn-reset-4">4 equipos</button>
@@ -634,7 +635,7 @@
       document.getElementById('qr-note').innerHTML    = note;
       document.getElementById('qr-direct-link').href  = `index.html${url.substring(url.lastIndexOf('/')+1)}`;
 
-      // Ficha hint superpuesta en el centro del QR (solo para tiles de equipo)
+      // Letra hint superpuesta en el centro del QR (solo para tiles de equipo)
       const hint = document.getElementById('qr-tile-hint');
       if (badgeEntry) {
         hint.className = `qr-tile-hint visible ${teamClass}`;
@@ -698,7 +699,7 @@
         timestamp,
         colorDark:   teamConf.qrColor,
         boxClass:    teamConf.boxClass,
-        label:       `Ficha para el equipo ${teamConf.label}`,
+        label:       `Código para el equipo ${teamConf.label}`,
         note:        `Este código es válido <strong style="color:var(${teamConf.cssVar})">30 segundos</strong>.<br>Solo puede escanearlo un miembro del equipo ${teamConf.label}.`,
         urgentClass: teamConf.urgentClass,
         badgeEntry:  entry,
@@ -797,6 +798,7 @@
       document.getElementById('error-msg').textContent = '';
     });
 
+    document.getElementById('btn-reset-1').addEventListener('click', () => generateResetQR(1));
     document.getElementById('btn-reset-2').addEventListener('click', () => generateResetQR(2));
     document.getElementById('btn-reset-3').addEventListener('click', () => generateResetQR(3));
     document.getElementById('btn-reset-4').addEventListener('click', () => generateResetQR(4));

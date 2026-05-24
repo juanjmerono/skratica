@@ -39,19 +39,19 @@
     // Equipos: clave interna A/B/C/D, nombre y colores configurables libremente
     const TEAMS_POOL = {
       A: {
-        label:      'Rojo',
-        color:      '#e05252',
-        tileBg:     '#fdf0f0',
-        tileBorder: '#e8c4c4',
-        glow:       'rgba(224, 82, 82, 0.55)',
-        qrColor:    '#000000',
-      },
-      B: {
         label:      'Azul',
         color:      '#5278e0',
         tileBg:     '#f0f3fd',
         tileBorder: '#c4cce8',
         glow:       'rgba(82, 120, 224, 0.55)',
+        qrColor:    '#000000',
+      },
+      B: {
+        label:      'Rojo',
+        color:      '#e05252',
+        tileBg:     '#fdf0f0',
+        tileBorder: '#e8c4c4',
+        glow:       'rgba(224, 82, 82, 0.55)',
         qrColor:    '#000000',
       },
       C: {
@@ -189,17 +189,21 @@
       return team;
     }
 
+    function teamCountInValidRange(n) {
+      return n >= 1 && n <= 4;
+    }
+
     function resolveTeamCount() {
       const saved = localStorage.getItem('skratica_team_count');
       if (saved) {
         const n = parseInt(saved, 10);
-        if (n >= 2 && n <= 4) return n;
+        if (teamCountInValidRange(n)) return n;
       }
       const params = new URLSearchParams(location.search);
       const fromUrl = params.get('teams');
       if (fromUrl) {
         const n = parseInt(fromUrl, 10);
-        if (n >= 2 && n <= 4) {
+        if (teamCountInValidRange(n)) {
           localStorage.setItem('skratica_team_count', n);
           return n;
         }
@@ -226,7 +230,7 @@
     }
     function setWordBonuses(arr){ localStorage.setItem('skratica_word_bonus', JSON.stringify(arr)); }
 
-    // Elige un bonus según la antigüedad de la ficha (en ms)
+    // Elige un bonus según la antigüedad de la letra escaneada (en ms)
     // Bonus de letra más probables que de palabra; magnitud mayor cuanto más rápido
     function pickBonus(ageMs) {
       const age = ageMs / 1000; // segundos
@@ -267,7 +271,7 @@
     }
 
     // ─────────────────────────────────────────────
-    // CONSTRUCCIÓN DE FICHAS PEQUEÑAS
+    // CONSTRUCCIÓN DE LETRAS PEQUEÑAS
     // ─────────────────────────────────────────────
     // bonus: '1' | '2L' | '3L' | '2W' | '3W'
     // active: true si el bonus aplica según la posición en la palabra
@@ -315,7 +319,7 @@
       return letterTotal * wordMult;
     }
 
-    // Actualiza opacidad de fichas según qué letras están usadas en inputStr
+    // Actualiza opacidad de letras según qué letras están usadas en inputStr
     // Devuelve { used, unused }
     function applyUsageToTilesAndReturn(inputStr, allLetters) {
       const pool = allLetters.map(l => l.toUpperCase());
@@ -578,7 +582,7 @@
       }
 
       function renderPoolNormal() {
-        // Modo normal: fichas no incluidas en el orden guardado marcadas como unused
+        // Modo normal: letras no incluidas en el orden guardado marcadas como unused
         const row = document.getElementById('tiles-row');
         row.innerHTML = '';
         const raw = localStorage.getItem('skratica_word_order');
@@ -613,7 +617,7 @@
       }
 
       function renderPoolReorder() {
-        // Modo reordenar: fichas clickables, seleccionadas en .unused
+        // Modo reordenar: letras clickables, seleccionadas en .unused
         const selectedSet = new Set(selected);
         const row = document.getElementById('tiles-row');
         row.innerHTML = '';
@@ -723,7 +727,7 @@
       const row = document.getElementById('tiles-row-done');
       row.innerHTML = '';
 
-      // Fichas usadas con badge según posición
+      // Letras usadas con badge según posición
       usedLetters.forEach((l, pos0) => {
         const bonus  = usedBonuses[pos0] || '1';
         const active = bonusApplies(bonus, pos0 + 1);
@@ -731,7 +735,7 @@
         row.appendChild(t);
       });
 
-      // Fichas sobrantes: pendientes (tenues) o ya compartidas (muy tenues)
+      // Letras sobrantes: pendientes (tenues) o ya compartidas (muy tenues)
       const sharedMark = [...sharedAlready];
       unusedLetters.forEach(l => {
         const t = buildMiniTile(l, '1', false);
@@ -781,7 +785,7 @@
     // ─────────────────────────────────────────────
 
     // Valida el QR generado por el capitán (payload: "captain,TEAM,TS,ID")
-    // Válido durante SESSION_TTL_MS (2h) en lugar de los 40s de las fichas normales
+    // Válido durante SESSION_TTL_MS (2h) en lugar de los 40s de las letras normales
     function processCaptainQR(encoded, myTeamKey) {
       let payload;
       try { payload = atob(encoded); } catch {
@@ -837,7 +841,7 @@
     }
 
     async function processTileParam(encoded, myTeamKey, myMode) {
-      // El capitán no puede canjear fichas de letras
+      // El capitán no puede canjear letras
       if (myMode === 'captain') {
         return { ok: false, title: 'Modo capitán', msg: 'Como capitán solo puedes escanear palabras validadas de tu equipo.' };
       }
@@ -846,19 +850,19 @@
       try {
         payload = atob(encoded);
       } catch {
-        return { ok: false, title: 'Ficha no válida', msg: 'El código de la ficha no se puede leer.' };
+        return { ok: false, title: 'Letra no válida', msg: 'El código de la letra no se puede leer.' };
       }
 
       const parts = payload.split(',');
       if (parts.length !== 4) {
-        return { ok: false, title: 'Ficha no válida', msg: 'El formato de la ficha es incorrecto.' };
+        return { ok: false, title: 'Letra no válida', msg: 'El formato de la letra es incorrecto.' };
       }
 
       const [inLetter, inTeam, inTsStr, inTileId] = parts;
       const inTs = parseInt(inTsStr, 10);
 
       if (!inLetter || !inTeam || isNaN(inTs)) {
-        return { ok: false, title: 'Ficha no válida', msg: 'El formato de la ficha es incorrecto.' };
+        return { ok: false, title: 'Letra no válida', msg: 'El formato de la letra es incorrecto.' };
       }
 
       // Validar equipo
@@ -868,7 +872,7 @@
         return {
           ok: false,
           title: 'Equipo incorrecto',
-          msg: `Esta ficha pertenece al equipo ${inTeamName}. Solo puedes unir fichas de tu propio equipo.`,
+          msg: `Esta letra pertenece al equipo ${inTeamName}. Solo puedes unir letras de tu propio equipo.`,
         };
       }
 
@@ -879,8 +883,8 @@
         const secs = Math.round(Math.abs(age) / 1000);
         return {
           ok: false,
-          title: 'Ficha caducada',
-          msg: `Esta ficha se generó hace demasiado tiempo y ha caducado, solo son válidas durante un tiempo.`,
+          title: 'Caducado',
+          msg: `Este código se generó hace demasiado tiempo y ha caducado, solo son válidas durante un tiempo.`,
         };
       }
 
@@ -896,7 +900,7 @@
       if (myMode === 'sharing') {
         return {
           ok: false,
-          title: 'Ya has compartido tu ficha',
+          title: 'Ya has compartido tu letra',
           msg: 'Una vez en modo compartir no puedes acumular letras de otros jugadores.',
         };
       }
@@ -917,7 +921,7 @@
       // Comprobar que este tileId no ha sido canjeado ya en este dispositivo
       const usedTiles = JSON.parse(localStorage.getItem('skratica_used_tiles') || '[]');
       if (usedTiles.includes(inTileId)) {
-        return { ok: false, title: 'Ficha ya canjeada', msg: 'Esta ficha ya ha sido escaneada y no puede canjearse de nuevo.' };
+        return { ok: false, title: 'Ya escaneado', msg: 'Este código ya ha sido escaneado y no puede canjearse de nuevo.' };
       }
 
       // Asignar bonus (30% de probabilidad, magnitud según velocidad de escaneo)
@@ -1566,7 +1570,7 @@
 
       applyTeamCSS(teamConf);
 
-      // Siempre rellenar la ficha propia (puede estar oculta pero debe estar lista)
+      // Siempre rellenar la letra propia (puede estar oculta pero debe estar lista)
       document.getElementById('tile-letter').textContent       = myEntry.letter;
       document.getElementById('tile-score').textContent        = myEntry.score;
       document.getElementById('team-label-normal').textContent = teamConf.label;
@@ -1627,7 +1631,7 @@
             ].forEach(k => localStorage.removeItem(k));
             if (teams) {
               const n = parseInt(teams, 10);
-              if (n >= 2 && n <= 4) localStorage.setItem('skratica_team_count', n);
+              if (teamCountInValidRange(n)) localStorage.setItem('skratica_team_count', n);
             }
             location.reload();
           } else {
@@ -1738,7 +1742,7 @@
           // Restaurar team count si venía en la URL del reset
           if (teamsAtReset) {
             const n = parseInt(teamsAtReset, 10);
-            if (n >= 2 && n <= 4) localStorage.setItem('skratica_team_count', n);
+            if (teamCountInValidRange(n)) localStorage.setItem('skratica_team_count', n);
           }
           location.reload();
           return;
@@ -1875,7 +1879,7 @@
         return;
       }
 
-      // Modo normal o sharing — mostrar ficha propia
+      // Modo normal o sharing — mostrar letra propia
       document.getElementById('view-normal').style.display = 'flex';
       if (myMode === 'sharing') {
         // Ya estaba compartiendo — no puede acumular, no mostrar hint
