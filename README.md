@@ -93,6 +93,11 @@ flowchart TD
 
 # Iniciar partida
 
+## 1 equipo
+[Iniciar Ronda 1 Equipo](https://juanjmerono.github.io/skratica/?teams=1)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?teams=1" alt="QR1">
+
 ## 2 equipos
 [Iniciar Ronda 2 Equipos](https://juanjmerono.github.io/skratica/?teams=2)
 
