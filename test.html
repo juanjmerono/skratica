@@ -210,15 +210,15 @@
     }
 
     .btn-action.team-a {
-      background: var(--red-color);
-      color: #fff;
-      box-shadow: 0 4px 16px var(--red-glow);
-    }
-
-    .btn-action.team-b {
       background: var(--blue-color);
       color: #fff;
       box-shadow: 0 4px 16px var(--blue-glow);
+    }
+
+    .btn-action.team-b {
+      background: var(--red-color);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--red-glow);
     }
 
     .btn-action.team-c {
@@ -274,11 +274,11 @@
     }
 
     .qr-box.type-a {
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--red-glow);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--blue-glow);
     }
 
     .qr-box.type-b {
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--blue-glow);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px var(--red-glow);
     }
 
     .qr-box.type-c {
@@ -317,8 +317,8 @@
 
     .qr-tile-hint.visible { display: flex; }
 
-    .qr-tile-hint.team-a { border-color: #e8c4c4; background: #fdf0f0; }
-    .qr-tile-hint.team-b { border-color: #c4cce8; background: #f0f3fd; }
+    .qr-tile-hint.team-a { border-color: #c4cce8; background: #f0f3fd; }
+    .qr-tile-hint.team-b { border-color: #e8c4c4; background: #fdf0f0; }
     .qr-tile-hint.team-c { border-color: #c4e8c4; background: #f0fdf0; }
     .qr-tile-hint.team-d { border-color: #e8e0a0; background: #fdfbf0; }
 
@@ -348,8 +348,8 @@
     }
 
     #qr-countdown.urgent-reset  { color: var(--danger); }
-    #qr-countdown.urgent-a      { color: var(--red-color); }
-    #qr-countdown.urgent-b      { color: var(--blue-color); }
+    #qr-countdown.urgent-a      { color: var(--blue-color); }
+    #qr-countdown.urgent-b      { color: var(--red-color); }
     #qr-countdown.urgent-c      { color: var(--green-color); }
     #qr-countdown.urgent-d      { color: var(--yellow-color); }
 
@@ -521,8 +521,8 @@
     ];
 
     const TEAMS = {
-      A: { label: 'Rojo',     color: '#e05252', qrColor: '#000000', cssVar: '--red-color',    glowVar: '--red-glow',    boxClass: 'type-a', teamClass: 'team-a', urgentClass: 'urgent-a' },
-      B: { label: 'Azul',     color: '#5278e0', qrColor: '#000000', cssVar: '--blue-color',   glowVar: '--blue-glow',   boxClass: 'type-b', teamClass: 'team-b', urgentClass: 'urgent-b' },
+      A: { label: 'Azul',     color: '#5278e0', qrColor: '#000000', cssVar: '--blue-color',   glowVar: '--blue-glow',   boxClass: 'type-a', teamClass: 'team-a', urgentClass: 'urgent-a' },
+      B: { label: 'Rojo',     color: '#e05252', qrColor: '#000000', cssVar: '--red-color',    glowVar: '--red-glow',    boxClass: 'type-b', teamClass: 'team-b', urgentClass: 'urgent-b' },
       C: { label: 'Verde',    color: '#52c052', qrColor: '#000000', cssVar: '--green-color',  glowVar: '--green-glow',  boxClass: 'type-c', teamClass: 'team-c', urgentClass: 'urgent-c' },
       D: { label: 'Amarillo', color: '#c8b820', qrColor: '#000000', cssVar: '--yellow-color', glowVar: '--yellow-glow', boxClass: 'type-d', teamClass: 'team-d', urgentClass: 'urgent-d' },
     };

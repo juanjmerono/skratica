@@ -821,7 +821,7 @@
       const inScore = parseInt(inScoreStr, 10);
       const inTs    = parseInt(inTsStr, 10);
       if (inTeam !== myTeamKey) {
-        return { ok: false, title: 'Equipo incorrecto', msg: `Esta palabra es del equipo ${TEAMS[inTeam]?.label || inTeam}, no del tuyo.` };
+        return { ok: false, title: 'Equipo incorrecto', msg: `Esta palabra es del equipo ${TEAMS[inTeam]?.label || 'desconocido'}, no del tuyo.` };
       }
       if (!inWord || isNaN(inScore)) {
         return { ok: false, title: 'Código no válido', msg: 'El formato del código de palabra es incorrecto.' };
@@ -868,7 +868,7 @@
       // Validar equipo
       if (inTeam !== myTeamKey) {
         const inTeamConf = TEAMS[inTeam];
-        const inTeamName = inTeamConf ? inTeamConf.label : inTeam;
+        const inTeamName = inTeamConf ? inTeamConf.label : 'desconocido';
         return {
           ok: false,
           title: 'Equipo incorrecto',
@@ -1592,7 +1592,7 @@
         if (!WORDS_ES.has(wordForDict)) {
           showError(
             'Palabra no válida',
-            `"${wordForDict.toUpperCase()}" no es una palabra válida en el diccionario de Scrabble. Sigue añadiendo letras o intenta otra combinación.`,
+            `"${wordForDict.toUpperCase()}" no es una palabra válida en el diccionario de Skratica. Sigue añadiendo letras o intenta otra combinación.`,
             () => showWordView(teamConf, letters)
           );
           return;
