@@ -931,7 +931,7 @@
 
       // Asignar bonus (30% de probabilidad, magnitud según velocidad de escaneo)
       const ageMs = now - inTs;
-      const bonus = Math.random() < 0.30 ? pickBonus(ageMs) : '1';
+      const bonus = Math.random() < 0.35 ? pickBonus(ageMs) : '1';
 
       // Registrar tileId como usado
       usedTiles.push(inTileId);
