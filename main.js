@@ -1135,12 +1135,6 @@
       // Restaurar marcador desde localStorage
       _renderCaptainScore();
 
-      // Ocultar QR si ya se escaneó al menos una palabra
-      const words = JSON.parse(localStorage.getItem('skratica_captain_score') || '[]');
-      if (words.length > 0) {
-        document.getElementById('captain-qr-area').style.display = 'none';
-      }
-
       // Clonar botones para limpiar listeners
       const btnScan   = document.getElementById('btn-captain-scan');
       const btnFinish = document.getElementById('btn-captain-finish');
@@ -1207,9 +1201,6 @@
           const words = JSON.parse(localStorage.getItem('skratica_captain_score') || '[]');
           words.push({ word: result.word, score: result.score });
           localStorage.setItem('skratica_captain_score', JSON.stringify(words));
-
-          // Ocultar QR del capitán tras primera palabra escaneada
-          document.getElementById('captain-qr-area').style.display = 'none';
 
           _renderCaptainScore();
           showCaptainView(teamConf, teamKey);
@@ -1302,17 +1293,64 @@
           return;
         }
 
-        showConfirm(async () => {
-          const timestamp = await getNetworkTime();
-          const tileId    = Math.random().toString(36).slice(2, 10);
-          const payload   = `${entry.letter},${teamKey},${timestamp},${tileId}`;
-          const encoded   = btoa(payload);
-          const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
+        startScanner(async (result) => {
+          const { tile, pass, reset } = result;
+          if (reset) {
+            showError('Código no válido', 'Debes escanear el QR del capitán para compartir tu letra.',
+              () => document.getElementById('view-normal').style.display = 'flex');
+            return;
+          }
+          if (pass) {
+            showError('Código no válido', 'Este es un código de acceso de capitán, no el QR del capitán.',
+              () => document.getElementById('view-normal').style.display = 'flex');
+            return;
+          }
+          if (!tile) {
+            showError('Código no válido', 'Este código no es válido.',
+              () => document.getElementById('view-normal').style.display = 'flex');
+            return;
+          }
 
-          localStorage.setItem('skratica_share_url', shareUrl);
-          renderQR(shareUrl, teamConf);
-          setMode('sharing');
-          showQRPanel(entry);
+          let decoded;
+          try { decoded = atob(tile); } catch {
+            showError('Código no válido', 'No se puede leer este código.',
+              () => document.getElementById('view-normal').style.display = 'flex');
+            return;
+          }
+
+          const parts = decoded.split(',');
+          if (parts[0] !== 'captain') {
+            showError('Código no válido', 'Debes escanear el QR del capitán para compartir tu letra.',
+              () => document.getElementById('view-normal').style.display = 'flex');
+            return;
+          }
+
+          const captainResult = processCaptainQR(tile, teamKey);
+          if (!captainResult.ok) {
+            showError(captainResult.title, captainResult.msg,
+              () => document.getElementById('view-normal').style.display = 'flex');
+            return;
+          }
+
+          try {
+            const timestamp = Date.now();
+            const tileId    = Math.random().toString(36).slice(2, 10);
+            const payload   = `${entry.letter},${teamKey},${timestamp},${tileId}`;
+            const encoded   = btoa(payload);
+            const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
+
+            localStorage.setItem('skratica_share_url', shareUrl);
+            renderQR(shareUrl, teamConf);
+            setMode('sharing');
+            document.getElementById('view-normal').style.display = 'flex';
+            showQRPanel(entry);
+          } catch (e) {
+            showError('Error al compartir', 'No se ha podido generar el código. Inténtalo de nuevo.',
+              () => document.getElementById('view-normal').style.display = 'flex');
+          }
+        }).catch(() => {
+          showError('Sin acceso a la cámara', 'No se ha podido acceder a la cámara. Comprueba los permisos.',
+            () => document.getElementById('view-normal').style.display = 'flex');
         });
       });
     }
@@ -1725,6 +1763,44 @@
 
         if (tile) {
           const currentMode = getMode();
+
+          let decodedType = '';
+          try { decodedType = atob(tile).split(',')[0]; } catch {}
+          if (decodedType === 'captain' && currentMode === 'normal') {
+            const captainResult = processCaptainQR(tile, myTeamKey);
+            if (!captainResult.ok) {
+              showError(captainResult.title, captainResult.msg,
+                () => document.getElementById('view-normal').style.display = 'flex');
+              return;
+            }
+            try {
+              const timestamp = Date.now();
+              const tileId    = Math.random().toString(36).slice(2, 10);
+              const payload   = `${myEntry.letter},${myTeamKey},${timestamp},${tileId}`;
+              const encoded   = btoa(payload);
+              const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
+              localStorage.setItem('skratica_share_url', shareUrl);
+              renderQR(shareUrl, teamConf);
+              setMode('sharing');
+              document.getElementById('view-normal').style.display = 'flex';
+              showQRPanel(myEntry);
+            } catch (e) {
+              showError('Error al compartir', 'No se ha podido generar el código. Inténtalo de nuevo.',
+                () => document.getElementById('view-normal').style.display = 'flex');
+            }
+            return;
+          }
+          if (decodedType === 'captain') {
+            showError('Ya has empezado', 'Para compartir tu letra debes estar en la pantalla principal, antes de escanear letras de compañeros.',
+              () => {
+                if (currentMode === 'word') showWordView(teamConf, getWordLetters());
+                else if (currentMode === 'done') showDoneView(teamConf, getWordLetters(), myTeamKey);
+                else document.getElementById('view-normal').style.display = 'flex';
+              }
+            );
+            return;
+          }
+
           const result = await processTileParam(tile, myTeamKey, currentMode);
 
           if (!result.ok) {
@@ -1881,6 +1957,35 @@
           return;
         }
 
+        if (decodedType === 'captain' && myMode === 'normal') {
+          const captainResult = processCaptainQR(encoded, myTeamKey);
+          if (!captainResult.ok) {
+            showError(captainResult.title, captainResult.msg,
+              () => document.getElementById('view-normal').style.display = 'flex');
+            return;
+          }
+          try {
+            const timestamp = Date.now();
+            const tileId    = Math.random().toString(36).slice(2, 10);
+            const payload   = `${myEntry.letter},${myTeamKey},${timestamp},${tileId}`;
+            const shareEncoded = btoa(payload);
+            const shareUrl  = `${SHARE_BASE_URL}/?tile=${shareEncoded}`;
+            localStorage.setItem('skratica_share_url', shareUrl);
+            renderQR(shareUrl, teamConf);
+            setMode('sharing');
+            document.getElementById('view-normal').style.display = 'flex';
+            showQRPanel(myEntry);
+          } catch (e) {
+            showError('Error al compartir', 'No se ha podido generar el código. Inténtalo de nuevo.',
+              () => document.getElementById('view-normal').style.display = 'flex');
+          }
+          document.getElementById('qr-panel').addEventListener('click', () => {
+            if (getMode() === 'sharing') return;
+            hideQRPanel();
+          });
+          return;
+        }
+
         if (decodedType === 'word' && myMode === 'captain') {
           const result = processCaptainWordQR(encoded, myTeamKey);
           if (!result.ok) {
@@ -1895,8 +2000,6 @@
           const words = JSON.parse(localStorage.getItem('skratica_captain_score') || '[]');
           words.push({ word: result.word, score: result.score });
           localStorage.setItem('skratica_captain_score', JSON.stringify(words));
-          // Ocultar QR del capitán tras primera palabra escaneada
-          document.getElementById('captain-qr-area').style.display = 'none';
           _renderCaptainScore();
           showCaptainView(teamConf, myTeamKey);
           return;
