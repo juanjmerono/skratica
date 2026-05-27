@@ -118,3 +118,29 @@ flowchart TD
 Utiliza esta página para probar el juego.
 
 [Test Game](https://juanjmerono.github.io/skratica/test.html)
+
+# Códigos de capitan
+
+## Equipo Azul
+
+[Ser capitán azul](https://juanjmerono.github.io/skratica/?pass=YXp1bA==)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?pass=YXp1bA==" alt="QRA">
+
+## Equipo Rojo
+
+[Ser capitán rojo](https://juanjmerono.github.io/skratica/?pass=cm9qbw==)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?pass=cm9qbw==" alt="QRR">
+
+## Equipo Verde
+
+[Ser capitán rojo](https://juanjmerono.github.io/skratica/?pass=dmVyZGU=)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?pass=dmVyZGU=" alt="QRV">
+
+## Equipo Amarillo
+
+[Ser capitán amarillo](https://juanjmerono.github.io/skratica/?pass=YW1hcmlsbG8=)
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=https://juanjmerono.github.io/skratica/?pass=YW1hcmlsbG8=" alt="QRL">

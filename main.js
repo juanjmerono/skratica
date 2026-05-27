@@ -39,36 +39,40 @@
     // Equipos: clave interna A/B/C/D, nombre y colores configurables libremente
     const TEAMS_POOL = {
       A: {
-        label:      'Azul',
-        color:      '#5278e0',
-        tileBg:     '#f0f3fd',
-        tileBorder: '#c4cce8',
-        glow:       'rgba(82, 120, 224, 0.55)',
-        qrColor:    '#000000',
+        label:          'Azul',
+        captainKeyHash: 'a4bd1d3a69aa0ea6ffb1298c8c26be4b333526cae7d27f2362f89857157701ce',
+        color:          '#5278e0',
+        tileBg:         '#f0f3fd',
+        tileBorder:     '#c4cce8',
+        glow:           'rgba(82, 120, 224, 0.55)',
+        qrColor:        '#000000',
       },
       B: {
-        label:      'Rojo',
-        color:      '#e05252',
-        tileBg:     '#fdf0f0',
-        tileBorder: '#e8c4c4',
-        glow:       'rgba(224, 82, 82, 0.55)',
-        qrColor:    '#000000',
+        label:          'Rojo',
+        captainKeyHash: '49bfb8998b3fabca7428df603bb2b263e099ce2959e96207669eeab330b85bbc',
+        color:          '#e05252',
+        tileBg:         '#fdf0f0',
+        tileBorder:     '#e8c4c4',
+        glow:           'rgba(82, 82, 82, 0.55)',
+        qrColor:        '#000000',
       },
       C: {
-        label:      'Verde',
-        color:      '#52c052',
-        tileBg:     '#f0fdf0',
-        tileBorder: '#c4e8c4',
-        glow:       'rgba(82, 192, 82, 0.55)',
-        qrColor:    '#000000',
+        label:          'Verde',
+        captainKeyHash: 'ec061fafb777f2943027f2deb3c17961556c386cad45065f343a74aea1177ad0',
+        color:          '#52c052',
+        tileBg:         '#f0fdf0',
+        tileBorder:     '#c4e8c4',
+        glow:           'rgba(82, 192, 82, 0.55)',
+        qrColor:        '#000000',
       },
       D: {
-        label:      'Amarillo',
-        color:      '#c8b820',
-        tileBg:     '#fdfbf0',
-        tileBorder: '#e8e0a0',
-        glow:       'rgba(200, 184, 32, 0.55)',
-        qrColor:    '#000000',
+        label:          'Amarillo',
+        captainKeyHash: 'e07198ba050a32495f45e76e102a28e9b062828bf7a51fd8ed4462f53e0205d9',
+        color:          '#c8b820',
+        tileBg:         '#fdfbf0',
+        tileBorder:     '#e8e0a0',
+        glow:           'rgba(200, 184, 32, 0.55)',
+        qrColor:        '#000000',
       },
     };
     let TEAMS = {};
@@ -529,8 +533,8 @@
       btnStart.parentNode.replaceChild(freshStart, btnStart);
       btnCaptain.parentNode.replaceChild(freshCaptain, btnCaptain);
 
-      if (onScanCaptain) freshStart.addEventListener('click', onScanCaptain, { once: true });
-      if (onBeCaptain)   freshCaptain.addEventListener('click', onBeCaptain, { once: true });
+      if (onScanCaptain) freshStart.addEventListener('click', onScanCaptain);
+      if (onBeCaptain)   freshCaptain.addEventListener('click', onBeCaptain);
     }
 
     function initReorderUI(letters, bonuses) {
@@ -1041,6 +1045,40 @@
       no.addEventListener('click',  onNo);
     }
 
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function launchCaptainKeyScan(onSuccess, onCancel) {
+      startScanner(async ({ pass }) => {
+        if (!pass) {
+          showError('Código no válido',
+            'Este no es un código de acceso de capitán. Escanea el QR con la clave de tu equipo.',
+            onCancel);
+          return;
+        }
+
+        let decoded;
+        try { decoded = atob(pass); } catch {
+          showError('Código no válido', 'No se puede leer este código.', onCancel);
+          return;
+        }
+
+        const hash = await sha256(decoded);
+        if (TEAMS[getOrAssignTeam()].captainKeyHash !== hash) {
+          showError('Clave incorrecta', 'La clave de capitán no es válida.', onCancel);
+          return;
+        }
+
+        onSuccess();
+      }).catch(() => {
+        showError('Sin acceso a la cámara', 'No se ha podido acceder a la cámara. Comprueba los permisos.', onCancel);
+      });
+    }
+
+    // ─────────────────────────────────────────────
+    // VISTA CAPITÁN
     // ─────────────────────────────────────────────
     // MODO CAPITÁN
     // ─────────────────────────────────────────────
@@ -1499,14 +1537,15 @@
 
       const tile  = url.searchParams.get('tile');
       const reset = url.searchParams.get('reset');
+      const pass  = url.searchParams.get('pass');
       const teams = url.searchParams.get('teams');
 
-      if (!tile && !reset) return false;
+      if (!tile && !reset && !pass) return false;
 
       // Es una URL válida — parar escáner y notificar
       const cb = _scanCallback;
       stopScanner();
-      if (cb) cb({ tile, reset, teams });
+      if (cb) cb({ tile, reset, pass, teams });
       return true;
     }
 
@@ -1549,8 +1588,18 @@
       // Lanzar escáner desde la intro (botón "Escanear al capitán")
       const launchScanFromIntro = async () => {
         try {
-          await startScanner(async ({ tile, reset }) => {
-            if (reset || !tile) {
+          await startScanner(async ({ tile, reset, pass, teams }) => {
+            if (reset) {
+              showIntroView(teamConf, launchScanFromIntro, becomeCaptain);
+              return;
+            }
+            if (!tile) {
+              if (pass) {
+                showError('Código no válido',
+                  'Este es un código de acceso de capitán. Pulsa "Soy capitán" para escanearlo.',
+                  () => showIntroView(teamConf, launchScanFromIntro, becomeCaptain));
+                return;
+              }
               showIntroView(teamConf, launchScanFromIntro, becomeCaptain);
               return;
             }
@@ -1584,14 +1633,9 @@
 
       // Convertirse en capitán (con confirmación previa)
       const becomeCaptain = () => {
-        showConfirm(
+        launchCaptainKeyScan(
           () => initCaptainMode(teamConf, myTeamKey),
-          () => showIntroView(teamConf, launchScanFromIntro, becomeCaptain),
-          {
-            title: '¿Eres el capitán?',
-            msg:   'Esta acción es <strong>irreversible</strong>.<br><br>Tu dispositivo quedará como capitán del equipo durante toda la ronda. El resto del equipo escaneará tu QR para empezar a jugar y tu recopilarás las palabras que te entreguen para obtener la puntuación final de tu equipo en esta ronda.',
-            yes:   'Soy el capitán',
-          }
+          () => showIntroView(teamConf, launchScanFromIntro, becomeCaptain)
         );
       };
 
@@ -1788,6 +1832,31 @@
           );
           return;
         }
+      }
+
+      // ── Parámetro ?pass= (clave de capitán) ──
+      const passEncoded = params.get('pass');
+
+      if (passEncoded) {
+        history.replaceState(null, '', window.location.pathname);
+
+        let decoded;
+        try { decoded = atob(passEncoded); } catch {
+          showError('Código no válido', 'No se puede leer este código.',
+            () => showIntroView(teamConf, launchScanFromIntro, becomeCaptain));
+          return;
+        }
+
+        const hash = await sha256(decoded);
+        if (teamConf.captainKeyHash !== hash) {
+          showError('Clave incorrecta', 'La clave de capitán no es válida.', 
+            () => showIntroView(teamConf, launchScanFromIntro, becomeCaptain));
+          return;
+        }
+        // Válido: activar modo capitán
+        setMode('captain');
+        initCaptainMode(teamConf, myTeamKey);
+        return;
       }
 
       // ¿Llega parámetro ?tile=?

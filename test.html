@@ -193,11 +193,12 @@
     }
 
     .btn-action.small {
-      padding: 10px 6px;
-      font-size: 0.72rem;
-      letter-spacing: 0.04em;
+      padding: 10px 4px;
+      font-size: 0.65rem;
+      letter-spacing: 0.03em;
       border-radius: 10px;
       flex: 1;
+      min-width: 0;
     }
 
     .btn-action:hover  { opacity: 0.85; }
@@ -412,22 +413,26 @@
     <div class="actions-title">Generar código QR</div>
 
     <div class="team-row">
-      <button class="btn-action small team-a" data-action="captain" data-team="A">Capitán</button>
+      <button class="btn-action small team-a" data-action="play" data-team="A">JUGAR</button>
+      <button class="btn-action small team-a" data-action="captain" data-team="A">CAPITÁN</button>
       <button class="btn-action small team-a" data-action="tile" data-team="A">Letra</button>
       <button class="btn-action small team-a" data-action="word" data-team="A">Palabra</button>
     </div>
     <div class="team-row">
-      <button class="btn-action small team-b" data-action="captain" data-team="B">Capitán</button>
+      <button class="btn-action small team-b" data-action="play" data-team="B">JUGAR</button>
+      <button class="btn-action small team-b" data-action="captain" data-team="B">CAPITÁN</button>
       <button class="btn-action small team-b" data-action="tile" data-team="B">Letra</button>
       <button class="btn-action small team-b" data-action="word" data-team="B">Palabra</button>
     </div>
     <div class="team-row">
-      <button class="btn-action small team-c" data-action="captain" data-team="C">Capitán</button>
+      <button class="btn-action small team-c" data-action="play" data-team="C">JUGAR</button>
+      <button class="btn-action small team-c" data-action="captain" data-team="C">CAPITÁN</button>
       <button class="btn-action small team-c" data-action="tile" data-team="C">Letra</button>
       <button class="btn-action small team-c" data-action="word" data-team="C">Palabra</button>
     </div>
     <div class="team-row">
-      <button class="btn-action small team-d" data-action="captain" data-team="D">Capitán</button>
+      <button class="btn-action small team-d" data-action="play" data-team="D">JUGAR</button>
+      <button class="btn-action small team-d" data-action="captain" data-team="D">CAPITÁN</button>
       <button class="btn-action small team-d" data-action="tile" data-team="D">Letra</button>
       <button class="btn-action small team-d" data-action="word" data-team="D">Palabra</button>
     </div>
@@ -521,10 +526,10 @@
     ];
 
     const TEAMS = {
-      A: { label: 'Azul',     color: '#5278e0', qrColor: '#000000', cssVar: '--blue-color',   glowVar: '--blue-glow',   boxClass: 'type-a', teamClass: 'team-a', urgentClass: 'urgent-a' },
-      B: { label: 'Rojo',     color: '#e05252', qrColor: '#000000', cssVar: '--red-color',    glowVar: '--red-glow',    boxClass: 'type-b', teamClass: 'team-b', urgentClass: 'urgent-b' },
-      C: { label: 'Verde',    color: '#52c052', qrColor: '#000000', cssVar: '--green-color',  glowVar: '--green-glow',  boxClass: 'type-c', teamClass: 'team-c', urgentClass: 'urgent-c' },
-      D: { label: 'Amarillo', color: '#c8b820', qrColor: '#000000', cssVar: '--yellow-color', glowVar: '--yellow-glow', boxClass: 'type-d', teamClass: 'team-d', urgentClass: 'urgent-d' },
+      A: { label: 'Azul',     password: 'azul',     color: '#5278e0', qrColor: '#000000', cssVar: '--blue-color',   glowVar: '--blue-glow',   boxClass: 'type-a', teamClass: 'team-a', urgentClass: 'urgent-a' },
+      B: { label: 'Rojo',     password: 'rojo',     color: '#e05252', qrColor: '#000000', cssVar: '--red-color',    glowVar: '--red-glow',    boxClass: 'type-b', teamClass: 'team-b', urgentClass: 'urgent-b' },
+      C: { label: 'Verde',    password: 'verde',    color: '#52c052', qrColor: '#000000', cssVar: '--green-color',  glowVar: '--green-glow',  boxClass: 'type-c', teamClass: 'team-c', urgentClass: 'urgent-c' },
+      D: { label: 'Amarillo', password: 'amarillo', color: '#c8b820', qrColor: '#000000', cssVar: '--yellow-color', glowVar: '--yellow-glow', boxClass: 'type-d', teamClass: 'team-d', urgentClass: 'urgent-d' },
     };
 
     const totalWeight = LETTERS.reduce((sum, l) => sum + l.weight, 0);
@@ -754,11 +759,31 @@
         timestamp,
         colorDark:   teamConf.qrColor,
         boxClass:    teamConf.boxClass,
-        label:       `QR de capitán — Equipo ${teamConf.label}`,
-        note:        `Este código identifica al capitán del equipo ${teamConf.label}.<br>Escanéalo desde la vista de introducción de otro dispositivo.`,
+        label:       `Código de juego — Equipo ${teamConf.label}`,
+        note:        `Escanea este QR desde la introducción para unirte al equipo ${teamConf.label}.`,
         urgentClass: teamConf.urgentClass,
         badgeEntry:  null,
         teamClass:   teamConf.teamClass,
+      });
+    }
+
+    async function generateCaptainPassQR(teamKey) {
+      const teamConf  = TEAMS[teamKey];
+      const payload   = teamConf.password;
+      const encoded   = btoa(payload);
+      const url       = `${SHARE_BASE_URL}?pass=${encoded}`;
+
+      showQR({
+        url,
+        timestamp: await getNetworkTime(),
+        colorDark:   teamConf.qrColor,
+        boxClass:    teamConf.boxClass,
+        label:       `Clave capitán — Equipo ${teamConf.label}`,
+        note:        `Escanea este QR desde el botón "Ser capitán" para convertirte en capitán del equipo ${teamConf.label}.<br>El código no caduca, puede reutilizarse.`,
+        urgentClass: teamConf.urgentClass,
+        badgeEntry:  null,
+        teamClass:   teamConf.teamClass,
+        duration:    60 * 60 * 1000, // 1h
       });
     }
     document.getElementById('btn-login').addEventListener('click', async () => {
@@ -810,7 +835,8 @@
       const { action, team } = btn.dataset;
       if (action === 'tile')    generateTileQR(team);
       if (action === 'word')    generateWordQR(team);
-      if (action === 'captain') generateCaptainQR(team);
+      if (action === 'play')    generateCaptainQR(team);
+      if (action === 'captain') generateCaptainPassQR(team);
     });
   </script>
 </body>
