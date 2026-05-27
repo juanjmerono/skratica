@@ -4,16 +4,16 @@ Scrabble colaborativo para ATICA. Cada ronda dura **1 hora** y pasado ese tiempo
 
 ## Cómo empieza
 
-Al entrar al juego se te asigna **aleatoriamente** un equipo y una **letra** (cada letra tiene una puntuación distinta). El número de equipos lo decide el administrador al generar la ronda (2, 3 o 4 equipos).
+Al entrar al juego se te asigna **aleatoriamente** un equipo y una **letra** (cada letra tiene una puntuación distinta). El número de equipos lo decide el administrador al generar la ronda (1, 2, 3 o 4 equipos).
 
 ## Roles
 
 ### Capitán
-El equipo elige a un capitán. Su misión:
-- **Da acceso a la ronda** al resto del equipo: los jugadores escanean su QR para empezar a jugar.
+El equipo elige a un capitán. Para activar el rol debe escanear un **código QR especial** (pre-generado para cada equipo, ver [Códigos de capitán](#códigos-de-capitan) al final del documento). Su misión:
+- **Da acceso a la ronda** al resto del equipo: los jugadores escanean su QR personal para empezar a jugar.
 - Escanea los códigos QR de las palabras validadas por sus compañeros para sumar puntos.
 - No descubre su letra hasta el final de la ronda.
-- Cuando ya no queden más palabras que recopilar, **finaliza la ronda**. En ese momento se revela su letra y se suma su valor multiplicado por las veces que aparece en las palabras recopiladas.
+- Cuando ya no queden más palabras que recopilar, **finaliza la ronda**. En ese momento se revela su letra y se suma su valor multiplicado por (1 + las veces que aparece en las palabras recopiladas).
 
 ### Jugador
 Cada jugador tiene su letra y debe elegir **una sola vez** entre dos caminos:
@@ -23,24 +23,27 @@ Cada jugador tiene su letra y debe elegir **una sola vez** entre dos caminos:
 
 ## Cómo se juega paso a paso
 
-1. **Elegir capitán** — Un miembro de cada equipo se ofrece como capitán y pulsa el botón que le asigna ese rol, sin vuelta atrás.
+1. **Elegir capitán** — Un miembro de cada equipo se ofrece como capitán, pulsa "Ser capitán" y escanea el **código QR especial** de su equipo (ver [Códigos de capitán](#códigos-de-capitan) al final del documento). No hay vuelta atrás.
 2. **Escanear al capitán** — El resto del equipo escanea el QR del capitán para empezar a jugar.
-2. **Compartir o recopilar** — Decides si cedes tu letra o acumulas letras de otros. Esta decisión es **irreversible** durante la ronda.
-3. **Recopilar letras** — Escanea los QR de las letras que te compartan tus compañeros. Cada letra escaneada puede recibir un **bonus aleatorio**:
+3. **Compartir o recopilar** — Decides si cedes tu letra o acumulas letras de otros. Esta decisión es **irreversible** durante la ronda.
+   - **Compartir**: Toca tu ficha y **vuelve a escanear el QR del capitán** para generar un código con tu letra. Entrégaselo a un compañero para que la recoja. A partir de aquí actúas como observador.
+   - **Recopilar**: Pulsa "Escanear letra" para recoger las letras que te compartan tus compañeros.
+4. **Recopilar letras** — Escanea los QR de las letras que te compartan tus compañeros. Cada letra escaneada tiene un **30% de probabilidad** de recibir un **bonus aleatorio** (mayor cuanto más rápido se escanee):
    - **×2L / ×3L** — Duplica/triplica el valor de la letra.
    - **×2P / ×3P** — Duplica/triplica el valor total de la palabra.
    - Los bonus de letra se aplican **solo** en posición **impar** (×3) o **par** (×2). Los bonus de palabra igual.
-4. **Formar la palabra** — Puedes reordenar tus letras como quieras y no estás obligado a usarlas todas para formar una palabra.
-5. **Validar** — Si la palabra existe en el diccionario, se considera válida. Es igual de justo para todos.
-6. **Entregar al capitán** — La palabra validada muestra un QR para que el capitán lo escanee.
-7. **Compartir sobrantes** — Las letras que no usaste se pueden volver a compartir con otros jugadores que sigan recopilando. Si la letra tenía un bonus, **se pierde** al compartirla (la siguiente persona que la reciba podrá obtener un bonus nuevo).
+5. **Formar la palabra** — Puedes reordenar tus letras como quieras y no estás obligado a usarlas todas para formar una palabra.
+6. **Validar** — Si la palabra existe en el diccionario, se considera válida. Es igual de justo para todos.
+7. **Entregar al capitán** — La palabra validada muestra un QR para que el capitán lo escanee.
+8. **Compartir sobrantes** — Las letras que no usaste se pueden volver a compartir con otros jugadores que sigan recopilando. Si la letra tenía un bonus, **se pierde** al compartirla (la siguiente persona que la reciba podrá obtener un bonus nuevo).
+9. **Finalizar la ronda** — El capitán puede finalizar la ronda cuando haya escaneado al menos una palabra. No puede hacerlo antes de **10 minutos** desde el inicio de la ronda (para evitar cierres accidentales).
 
 ## Puntuación final
 
 Cuando el capitán da por terminada la ronda:
 - Se suma la puntuación de todas las palabras recopiladas.
 - Se revela la letra del capitán.
-- Su valor se multiplica por el número de veces que esa letra aparece en las palabras recopiladas y se añade al total.
+- Su valor se multiplica por (1 + número de veces que esa letra aparece en las palabras recopiladas). Por ejemplo, si la letra del capitán es la A (valor 1) y aparece 3 veces en las palabras del equipo, se suman 1 × (1 + 3) = 4 puntos.
 
 El equipo con más puntos gana la ronda.
 
@@ -52,7 +55,7 @@ El equipo con más puntos gana la ronda.
 
 # Diagrama de flujo del juego
 
-[Share FlowChart](https://kroki.io/mermaid/svg/eNp1VcFum0AQvecr5tgc8gdVKoxJTEUgAZIckBWtYeNshXfJAm7Tph-TD-ih6gdUqn-sM7uA12nKxRKeefNm3pvhvlafywemO8jnR4BPlntp_q4IZKeZBlbDp56v1fIYTk5Owcuy8DwuvFasJSvF7pfECM46pQV7v9KnFQf-2ItGwRPUHBGWBtOmGYQs8FJ_Ucz6tmTAoOtbKNWmYbufXKsWJgCbaKNNou9d5l4Y380DP8zCJP7253fOMVduBdcdb6k8l1CyRnS7F7lH-vD9yGC9BiDU52z34xlmgZ9cBHdDQOGVndhi7xtVqQmP4E9gzSXXxBquUmi4bpVk9fL_8LF6hsz34gk7wLYlZ8BrQqjwxy3QMATnm4Z_pdHj5NdMLy37tl-tNWsewB_izVt6DtmbWd16YY6lGuLasJqtNGthy2pRsYq1g1CvRr-cACnbakXMb5N0PtE2nCdIAnoCVvabvsZCvexcmCnbYF0kaYCSXfW8YhI2u5fWNmyRUKMxjQL30hCXf_-isZ6FcZgtijOBCgiaF1LQSlZsz8CGmPJpcBN4UZFx0HzLayOhMSj140rwBWJgqIMohZK8BbTUSHIPbNEMcJ7khNtvEFJ1uC6kqWthekyQVSaMcbfGCLLvfhZmfrBmku17OTYYXFavXPARrVEpfThs1wJkwzlN3CeJaUGmlqmYwjmUqhE1GsO8dCWwuWbSQ7bQ6OOFlwbF23DURy8dOzk2oDRDKZllQXoTpMUla7EsA7Vqud5SH3a7ENF0DQ84TK43KG3lIDm00oE80vKTKAr8fLKo7QYee06gHbekdIeuU92Bz4dMw22WxNdZ4eN6DLZo0KhkllKshKGH7a2UxJ0ZD57DzGQPPkPDY4spV7riRslxwHZb7pVGq_RyWkzXVSbX4Nx4UTj3chIwmkLBXrnt7oU2mayJXqtESVZFxypHwjF_WpcB_O0As2rzIApJnXN743DVSdV6qu6WfkInmoXv7VfAFcmg2PtxnV5GNNbBM6M2rUI4OdxsKmKEefsYDRgHBjrcifHtdPmO_gK6jCoE)
+[Share FlowChart](https://kroki.io/mermaid/svg/eNp1VcFum0AQvecr9tgc8gdVKoJJQuvgBIijClnRGibOVniXLOAqbfodPecDeqjyAZXKj3VmF_DaSblYwjtv3rz3Zrkr1df8nuuGpZMDhk-SenH6Lgtko7lmvGRfWlipxSE7OjpmXpKEZ1Hm1WIleS66F4kngDdKC_5-qY8LYPDQikqxR1YCIiwMpi0zCEngxf55dtLWOWecNW3NcrWuePcbtKrZCGAL7WlT6HuXqRdGt5PAD5NwFn3_-ycFrJUbAbqBmtqDZDmvRNM9yy3Shx8HBmsfgFCfku7XE0t8L7od_v4UfM4CJCeBs7x7KcRKMagryAUv-xHdHnW7S3gPylA_CfzZRTC8zry8ERvUdq0KNWIR9BFbgQRNqrCrmFWgayV5ufg__Ujtsh-ZQ0kIBf64DSqO4LCu4BtZi86uuF5Ydep2udK8umd-f968pWeXvRnoxgtTbFUR14qXfKl5zTa8FAUveN2rtGftYgSkapsFYn4ziycjbcN5hCSgR8bzdt2W2KiVjQszVhusi1kcYCSuWii4ZOvuubYDWyTMwFBGB7fWE5fXf5Gsp2EUJufZqUAHBOmFFLSSBd8ysEdM-ziYB940S4Bp2EBpLDQLwJy8EKPuZ8Q4-iByoSQ441gEA5bOUsJq1wijGlxB8tFNGT3mkHUjjHBfhxO0Etv5jWZsxSXf8j80GCCLPec_YhwKpXcFdm2n6E1IZZ9spaUbx6RmCmfPVSVKDIN56cpua426fbXQTzj0TnrnLZQbwGSCzYM2S_0qyq5or0gm514cZG8zJGla6aTSSROVGYDZSRLE8yDOLnmNk3CmljXoDUljlxQRjZDsHv0BvcaEFA6SM2nc64GT-rPpNPDTMelWIPbQAoE2YEnpBsOrmp116SvtTTKLrpPMxy3r01Vh3ilzuVgKQw_HWyqJqzfcyw4zU93HFfcGR4xB6QJMOAbP7NLdKY3pa-W4367mptbgzL1pOPFSysR0PMrsZbzpnulCwKDRbVSInBKPwVdOKob6cet68LcPmI2dBNOQ3DmzVyVGg1wtx-5u60e6nmkHWvuxck0yKDYx1_HllGTtMzN4UyuEk_2nhZoYY96-03qMnQDtrtnwdrxAD_4Br0hf8w)
 
 ```mermaid
 flowchart TD
@@ -60,7 +63,8 @@ flowchart TD
     ASSIGN --> SEARCH[Busca a tus compañeros de equipo]
     SEARCH --> CAPTAIN_DECISION{¿Te conviertes<br>en capitán de equipo?}
 
-    CAPTAIN_DECISION -->|Sí| BECOME_CAPTAIN[Activar modo capitán<br>- genera tu QR personal]
+    CAPTAIN_DECISION -->|Sí| SCAN_CAPTAIN_KEY[Escanea código especial<br>de capitán de su equipo]
+    SCAN_CAPTAIN_KEY --> BECOME_CAPTAIN[Activar modo capitán<br>- genera tu QR personal]
     CAPTAIN_DECISION -->|No| SCAN_CAPTAIN[Escanea el QR del capitán<br>para empezar a jugar]
 
     subgraph Capitán
@@ -69,14 +73,15 @@ flowchart TD
         SCAN_WORD --> MORE{¿Quedan más<br>palabras?}
         MORE -->|Sí| WAIT
         MORE -->|No| FINISH[Finalizar la ronda]
-        FINISH --> REVEAL[Se revela tu letra de capitán<br>x N apariciones en palabras]
+        FINISH --> REVEAL[Se revela tu letra de capitán<br>×N apariciones]
         REVEAL --> TOTAL[Suma total del equipo]
         TOTAL --> WIN([El equipo con más<br>puntos gana la ronda])
     end
 
     subgraph Jugador
         SCAN_CAPTAIN --> DECIDE{¿Compartes tu letra<br>o recopilas letras?}
-        DECIDE -->|Compartir| SHARE[Compartes tu letra<br>con un compañero]
+        DECIDE -->|Compartir| RESCAN_CAPTAIN[Vuelve a escanear<br>el QR del capitán]
+        RESCAN_CAPTAIN --> SHARE[Compartes tu letra<br>con un compañero]
         SHARE --> OBSERVER[Pasas a observador<br>- tu ronda ha terminado]
         DECIDE -->|Recopilar| COLLECT[Escanea letras que<br>te compartan otros]
         COLLECT --> BONUS[Cada letra puede recibir<br>un bonus aleatorio]
