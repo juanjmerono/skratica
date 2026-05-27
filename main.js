@@ -159,8 +159,9 @@
          'skratica_word_used_bonuses','skratica_word_final',
          'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
          'skratica_used_tiles','skratica_created_at',
-         'skratica_captain','skratica_captain_id','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
-         'skratica_team_count',
+         'skratica_captain','skratica_captain_id','skratica_captain_url',
+         'skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
+         'skratica_captain_started_at','skratica_team_count',
         ].forEach(k => localStorage.removeItem(k));
         location.reload();
         return;
@@ -1075,6 +1076,11 @@
         localStorage.setItem('skratica_captain_id', id);
       }
 
+      // Registrar inicio de ronda (solo la primera vez, persiste entre recargas)
+      if (!localStorage.getItem('skratica_captain_started_at')) {
+        localStorage.setItem('skratica_captain_started_at', String(Date.now()));
+      }
+
       // Renderizar QR del capitán
       const qrEl = document.getElementById('captain-qr-code');
       qrEl.innerHTML = '';
@@ -1105,7 +1111,7 @@
       btnFinish.parentNode.replaceChild(freshFinish, btnFinish);
 
       freshScan.addEventListener('click', () => _launchCaptainScanner(teamConf, teamKey));
-      freshFinish.addEventListener('click', () => finalizeCaptainRound(teamConf));
+      freshFinish.addEventListener('click', () => finalizeCaptainRound(teamConf, teamKey));
     }
 
     // Restaura la vista del capitán completa (re-renderiza QR y marcador)
@@ -1175,12 +1181,27 @@
       }
     }
 
-    function finalizeCaptainRound(teamConf) {
+    function finalizeCaptainRound(teamConf, teamKey = null) {
+      const CAPTAIN_ROUND_MIN_MS = 10 * 60 * 1000;
+      const startedAt = parseInt(localStorage.getItem('skratica_captain_started_at') || '0', 10);
+      const elapsed = Date.now() - startedAt;
+      const words = JSON.parse(localStorage.getItem('skratica_captain_score') || '[]');
+
+      if (startedAt > 0 && elapsed < CAPTAIN_ROUND_MIN_MS && words.length === 0) {
+        const faltaMin = Math.ceil((CAPTAIN_ROUND_MIN_MS - elapsed) / 60000);
+        showError(
+          'Todavía no puedes finalizar',
+          `Escanea al menos una palabra primero o espera 10 minutos para finalizar la ronda. Te quedan aproximadamente ${faltaMin} min.`,
+          () => showCaptainView(teamConf, teamKey)
+        );
+        return;
+      }
+
       showConfirm(
         () => _doFinalizeCaptainRound(teamConf),
         null,
         {
-          title: '¿Finalizar la ronda?',
+          title: '¿Has escaneado todas las palabras de tu equipo?',
           msg:   'Esta acción es <strong>irreversible</strong>.<br><br>Ya no podrás escanear más palabras y se cerrará la ronda del equipo, a la suma actual se añadirá el valor de tu letra asignada como capitán con un multiplicador por uso.',
           yes:   'Finalizar',
         }
@@ -1626,9 +1647,10 @@
              'skratica_word_bonus','skratica_word_order','skratica_word_used',
              'skratica_word_used_bonuses','skratica_word_final',
              'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
-             'skratica_used_tiles','skratica_created_at',
-         'skratica_captain','skratica_captain_id','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
-             'skratica_team_count',
+             'skratica_used_tiles','skratica_created_at','skratica_captain',
+             'skratica_captain_id','skratica_captain_url','skratica_captain_score',
+             'skratica_captain_scanned','skratica_captain_finished',
+             'skratica_captain_started_at','skratica_team_count',
             ].forEach(k => localStorage.removeItem(k));
             if (teams) {
               const n = parseInt(teams, 10);
@@ -1736,9 +1758,9 @@
             'skratica_word_bonus','skratica_word_order','skratica_word_used',
             'skratica_word_used_bonuses','skratica_word_final',
             'skratica_share_url','skratica_surplus_shared','skratica_surplus_url',
-            'skratica_used_tiles','skratica_created_at',
-            'skratica_captain','skratica_captain_url','skratica_captain_score','skratica_captain_scanned','skratica_captain_finished',
-            'skratica_team_count',
+            'skratica_used_tiles','skratica_created_at','skratica_captain',
+            'skratica_captain_url','skratica_captain_score','skratica_captain_scanned',
+            'skratica_captain_finished','skratica_captain_started_at','skratica_team_count',
            ].forEach(k => localStorage.removeItem(k));
           // Restaurar team count si venía en la URL del reset
           if (teamsAtReset) {
