@@ -1220,6 +1220,7 @@
     function initShareMode(entry, teamKey, teamConf) {
       // Tap on QR panel → back to tile view
       document.getElementById('qr-panel').addEventListener('click', () => {
+        if (getMode() === 'sharing') return;
         hideQRPanel();
       });
 
