@@ -1056,6 +1056,7 @@
         document.getElementById('view-captain').classList.add('active');
         document.getElementById('team-label-captain').textContent = teamConf.label;
         document.getElementById('captain-qr-area').style.display = 'none';
+        document.getElementById('captain-round-ended').style.display = 'flex';
         _renderCaptainScore();
         document.getElementById('btn-captain-scan').style.display   = 'none';
         document.getElementById('btn-captain-finish').style.display = 'none';
@@ -1232,6 +1233,10 @@
 
       // Marcar ronda como finalizada (persiste entre recargas)
       localStorage.setItem('skratica_captain_finished', '1');
+
+      // Ocultar QR del capitán y mostrar indicador de fin de ronda
+      document.getElementById('captain-qr-area').style.display = 'none';
+      document.getElementById('captain-round-ended').style.display = 'flex';
 
       // Ocultar botones de acción
       document.getElementById('btn-captain-scan').style.display   = 'none';
