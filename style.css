@@ -77,7 +77,6 @@
       width: min(72vmin, 380px);
       height: min(72vmin, 380px);
       position: relative;
-      cursor: pointer;
     }
 
     .tile {
@@ -217,14 +216,15 @@
     }
 
     .hint--tap {
-      color: #c4c4e8;
-      font-weight: 500;
+      color: var(--text-muted);
+      font-style: italic;
+      font-weight: 400;
     }
 
     .hint--scan {
       color: var(--text-muted);
       font-style: italic;
-      font-size: min(2.7vmin, 12px);
+      font-weight: 400;
     }
 
     .hints-divider {
@@ -1062,10 +1062,6 @@
 
       .hint {
         font-size: min(3.8vmin, 15px);
-      }
-
-      .hint--scan {
-        font-size: min(3.5vmin, 14px);
       }
 
       .confirm-msg { font-size: 1.4rem; }

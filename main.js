@@ -1328,7 +1328,7 @@
         return;
       }
 
-      document.getElementById('tile-wrapper').addEventListener('click', () => {
+      const deliverLetter = () => {
         if (qrGenerated) {
           showQRPanel(entry);
           return;
@@ -1393,7 +1393,9 @@
           showError('Sin acceso a la cámara', 'No se ha podido acceder a la cámara. Comprueba los permisos.',
             () => document.getElementById('view-normal').style.display = 'flex');
         });
-      });
+      };
+
+      document.getElementById('btn-share-letter').addEventListener('click', deliverLetter);
     }
 
     // ─────────────────────────────────────────────

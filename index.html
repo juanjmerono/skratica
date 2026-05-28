@@ -23,7 +23,7 @@
       <span class="team-heading">Equipo</span>
       <span class="team-name" id="team-label-intro"></span>
     </div>
-    <p class="intro-message">Busca a tus colegas de equipo, nombrar un capitán y escanear su código QR.</p>
+    <p class="intro-message">Busca a tus colegas de equipo, nombrad un capitán y escanead su código QR.</p>
     <button class="btn-start" id="btn-start">Escanea al capitán</button>
     <button class="btn-captain" id="btn-captain">Ser capitán</button>
   </div>
@@ -83,7 +83,7 @@
           <path d="M9 11V6a3 3 0 0 1 6 0v5"/>
           <path d="M9 11H7a2 2 0 0 0-2 2v1a8 8 0 0 0 8 8 8 8 0 0 0 8-8v-1a2 2 0 0 0-2-2h-2"/>
         </svg>
-        Pulsa la letra y escanea otra vez a tu capitán para compartir tu letra con otro compañero de equipo
+        Escanea otra vez a tu capitán para entregar tu letra a un colega de equipo
       </span>
       <div class="hints-divider"></div>
       <span class="hint hint--scan" id="hint-scan">
@@ -97,6 +97,15 @@
         Escanea la letra compartida de un compañero para formar una palabra
       </span>
       <div class="hints-divider"></div>
+      <button class="btn-scan" id="btn-share-letter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        Entregar mi letra
+      </button>
+      <div class="hints-divider"></div>
       <button class="btn-scan" id="btn-scan">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0">
           <rect x="3" y="3" width="5" height="5" rx="1"/>
@@ -105,7 +114,7 @@
           <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
           <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
         </svg>
-        Escanear letra
+        Capturar letra
       </button>
     </div>
     <div class="team-block">
@@ -146,7 +155,7 @@
         <path d="M16 16h2v2h-2zM18 18h3M18 21v-3M21 16v2"/>
         <path d="M11 3v4M11 11h4M3 11h4M11 15v2M11 19v2M15 11v4"/>
       </svg>
-      Escanear letra
+      Capturar otra letra
     </button>
   </div>
 
