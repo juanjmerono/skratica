@@ -283,7 +283,7 @@
     function buildMiniTile(letterStr, bonus, active) {
       const entry = letterEntry(letterStr);
       const tile  = document.createElement('div');
-      tile.className = 'mini-tile';
+      tile.className = 'mini-tile' + (active ? ' bonus-tile-active' : '');
       tile.dataset.letter = entry.letter;
       if (bonus && bonus !== '1') tile.dataset.bonus = bonus;
       const l = document.createElement('span');

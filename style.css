@@ -553,14 +553,29 @@
       font-weight: 900;
     }
 
+    /* Ficha con bonus activo */
+    .mini-tile.bonus-tile-active {
+      border-color: var(--team-color);
+      background: color-mix(in srgb, var(--team-color) 18%, var(--team-tile-bg));
+      box-shadow:
+        0 2px 0 #c8bfa8,
+        0 4px 0 #b8af98,
+        0 5px 10px rgba(0,0,0,0.5),
+        0 0 20px var(--team-color),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      transform: scale(1.05);
+    }
+
     /* Desglose de bonus aplicados */
     .bonus-breakdown {
-      font-size: 0.68rem;
-      color: var(--text-muted);
+      font-size: 0.88rem;
+      color: var(--team-color);
       letter-spacing: 0.04em;
-      margin-top: 5px;
+      margin-top: 7px;
       min-height: 1em;
       text-align: center;
+      font-weight: 700;
+      text-shadow: 0 0 12px var(--team-glow);
     }
 
     /* Puntuación parcial */
