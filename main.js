@@ -400,6 +400,26 @@
       return getUsedWithBonuses(wordStr, allLetters, allBonuses);
     }
 
+    // Devuelve los índices originales de las letras usadas en orden de palabra
+    function getUsedIndices(allLetters) {
+      const raw = localStorage.getItem('skratica_word_order');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch(e) {}
+        // Legacy string format
+        const tmpPool = allLetters.map((l, i) => ({ l: l.toUpperCase(), i }));
+        const indices = [];
+        for (const ch of raw.toUpperCase()) {
+          const found = tmpPool.find(x => x.l === ch);
+          if (found) { indices.push(found.i); tmpPool.splice(tmpPool.indexOf(found), 1); }
+        }
+        if (indices.length > 0) return indices;
+      }
+      return allLetters.map((_, i) => i);
+    }
+
     // Dado un wordStr, allLetters y allBonuses, devuelve las letras y bonuses usados en orden de palabra
     function getUsedWithBonuses(wordStr, allLetters, allBonuses) {
       const wordUp = (wordStr || '').toUpperCase();
@@ -731,12 +751,12 @@
       const { used: usedLetters, usedBonuses } = getUsedWithBonusesSmart(letters, allBonuses);
       const confirmedWord = usedLetters.join('');
 
-      // Letras sobrantes = las que no entraron en la palabra
-      const unusedLetters = (() => {
-        const p = [...letters];
-        usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i, 1); });
-        return p;
-      })();
+      // Letras sobrantes por índice (correcto con duplicados)
+      const usedIndices = getUsedIndices(letters);
+      const usedSet = new Set(usedIndices);
+      const unusedIndices = letters.map((_, i) => i).filter(i => !usedSet.has(i));
+      const unusedLetters = unusedIndices.map(i => letters[i]);
+      const unusedBonuses = unusedIndices.map(i => (allBonuses && allBonuses[i]) || '1');
 
       // Letras sobrantes ya compartidas
       const sharedAlready  = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
@@ -760,11 +780,13 @@
         row.appendChild(t);
       });
 
-      // Letras sobrantes: pendientes (tenues) o ya compartidas (muy tenues)
+      // Letras sobrantes: pendientes (tenues) o ya compartidas (muy tenues), con su bonus real
       const sharedMark = [...sharedAlready];
-      unusedLetters.forEach(l => {
-        const t = buildMiniTile(l, '1', false);
-        const si = sharedMark.indexOf(l);
+      unusedIndices.forEach((origIdx, j) => {
+        const l     = letters[origIdx];
+        const bonus = unusedBonuses[j];
+        const t     = buildMiniTile(l, bonus, false);
+        const si    = sharedMark.indexOf(l);
         if (si !== -1) { sharedMark.splice(si, 1); t.classList.add('shared'); }
         else { t.classList.add('unused'); }
         row.appendChild(t);
@@ -1380,23 +1402,21 @@
     // ─────────────────────────────────────────────
 
     function getPendingSurplus(letters) {
-      const bonuses   = getWordBonuses();
-      const { used: usedLetters } = getUsedWithBonusesSmart(letters, bonuses);
-      const unusedLetters = (() => {
-        const p = [...letters];
-        usedLetters.forEach(l => { const i = p.indexOf(l); if (i !== -1) p.splice(i, 1); });
-        return p;
-      })();
+      const bonuses = getWordBonuses();
+      const usedIndices = getUsedIndices(letters);
+      const usedSet = new Set(usedIndices);
+      const unusedIndices = letters.map((_, i) => i).filter(i => !usedSet.has(i));
       const sharedAlready = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
       const pool = [...sharedAlready];
-      return unusedLetters.filter(l => {
-        const i = pool.indexOf(l);
-        if (i !== -1) { pool.splice(i, 1); return false; }
+      return unusedIndices.filter(i => {
+        const l = letters[i];
+        const pos = pool.indexOf(l);
+        if (pos !== -1) { pool.splice(pos, 1); return false; }
         return true;
       });
     }
 
-    function showSurplusQRPanel(entry, teamConf, teamKey, letters) {
+    function showSurplusQRPanel(entry, teamConf, teamKey, letters, sharedIdx) {
       // Ocultar vista done, mostrar view-normal (padre de qr-panel)
       document.getElementById('view-done').classList.remove('active');
       document.getElementById('view-normal').style.display = 'flex';
@@ -1434,12 +1454,9 @@
         localStorage.setItem('skratica_surplus_shared', JSON.stringify(shared));
 
         // Resetear el bonus de esa letra a '1' en skratica_word_bonus
-        const allLetters = getWordLetters();
         const allBonuses = getWordBonuses();
-        let resetIdx = allLetters.findIndex((l, i) => l === entry.letter && allBonuses[i] !== '1');
-        if (resetIdx === -1) resetIdx = allLetters.indexOf(entry.letter);
-        if (resetIdx !== -1) {
-          allBonuses[resetIdx] = '1';
+        if (typeof sharedIdx === 'number' && sharedIdx >= 0 && sharedIdx < allBonuses.length) {
+          allBonuses[sharedIdx] = '1';
           setWordBonuses(allBonuses);
         }
 
@@ -1474,8 +1491,9 @@
         const nowPending = getPendingSurplus(letters);
         if (nowPending.length === 0) { fresh.style.display = 'none'; return; }
 
-        const letter    = nowPending[0];
-        const entryObj  = LETTERS.find(l => l.letter === letter) || { letter, score: 0 };
+        const pendingIdx = nowPending[0];
+        const letter     = letters[pendingIdx];
+        const entryObj   = LETTERS.find(l => l.letter === letter) || { letter, score: 0 };
 
         showConfirm(async () => {
           const timestamp = await getNetworkTime();
@@ -1496,7 +1514,7 @@
             correctLevel: QRCode.CorrectLevel.H,
           });
 
-          showSurplusQRPanel(entryObj, teamConf, teamKey, letters);
+          showSurplusQRPanel(entryObj, teamConf, teamKey, letters, pendingIdx);
         }, () => { /* cancelar: view-done sigue visible, no hace falta nada */ });
       });
     }
