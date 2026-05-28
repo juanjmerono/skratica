@@ -584,6 +584,22 @@
         }
         document.getElementById('partial-score').textContent   = calcScore(used, usedBonuses);
         document.getElementById('bonus-breakdown').textContent = buildBonusBreakdown(used, usedBonuses);
+
+        // Validar palabra contra el diccionario
+        const wordForDict = used.join('').toLowerCase();
+        const statusEl = document.getElementById('validation-status');
+        if (used.length > 0 && typeof WORDS_ES !== 'undefined') {
+          if (WORDS_ES.has(wordForDict)) {
+            statusEl.textContent = '✓ Válida';
+            statusEl.className = 'validation-status valid';
+          } else {
+            statusEl.textContent = '✗ No válida';
+            statusEl.className = 'validation-status invalid';
+          }
+        } else {
+          statusEl.textContent = '';
+          statusEl.className = 'validation-status';
+        }
       }
 
       function renderPoolNormal() {
