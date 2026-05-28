@@ -319,7 +319,7 @@
         const bonus = bonuses[i] || '1';
         const { letter: lm, word: wm } = bonusMultipliers(bonus, pos);
         letterTotal += (letterEntry(l).score || 0) * lm;
-        if (wm > wordMult) wordMult = wm;
+        wordMult *= wm;
       });
       return letterTotal * wordMult;
     }
@@ -497,10 +497,9 @@
           letterParts[label].push('P' + pos);
         } else if (bonus === '2W' || bonus === '3W') {
           const mult = bonus === '2W' ? 2 : 3;
-          if (mult > wordBonus) {
-            wordBonus      = mult;
-            wordBonusLabel = (bonus === '2W' ? '×2P' : '×3P') + ' en P' + pos;
-          }
+          wordBonus *= mult;
+          const label = (bonus === '2W' ? '×2P' : '×3P') + ' en P' + pos;
+          wordBonusLabel = wordBonusLabel ? wordBonusLabel + ' · ' + label : label;
         }
       });
 
