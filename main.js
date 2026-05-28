@@ -666,6 +666,8 @@
         document.getElementById('bonus-breakdown').textContent = '';
 
         document.getElementById('btn-reorder').style.display = 'none';
+        document.getElementById('btn-validate').style.display = 'none';
+        document.getElementById('btn-scan-word').style.display = 'none';
         document.getElementById('reorder-area').classList.add('active');
         renderPoolReorder();
       }
@@ -678,6 +680,8 @@
         persist();
         document.getElementById('reorder-area').classList.remove('active');
         document.getElementById('btn-reorder').style.display = '';
+        document.getElementById('btn-validate').style.display = '';
+        document.getElementById('btn-scan-word').style.display = '';
         renderPoolNormal();
         updatePreviewAndScore();
       }
