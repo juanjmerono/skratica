@@ -946,8 +946,8 @@
       if (myMode === 'sharing') {
         return {
           ok: false,
-          title: 'Ya has compartido tu letra',
-          msg: 'Una vez en modo compartir no puedes acumular letras de otros jugadores.',
+          title: 'Ya has entregado tu letra',
+          msg: 'Una vez entregas tu letra no puedes acumular letras de otros jugadores.',
         };
       }
 
@@ -1337,7 +1337,7 @@
         startScanner(async (result) => {
           const { tile, pass, reset } = result;
           if (reset) {
-            showError('Código no válido', 'Debes escanear el QR del capitán para compartir tu letra.',
+            showError('Código no válido', 'Debes escanear el QR del capitán para entregar tu letra.',
               () => document.getElementById('view-normal').style.display = 'flex');
             return;
           }
@@ -1361,7 +1361,7 @@
 
           const parts = decoded.split(',');
           if (parts[0] !== 'captain') {
-            showError('Código no válido', 'Debes escanear el QR del capitán para compartir tu letra.',
+            showError('Código no válido', 'Debes escanear el QR del capitán para entregar tu letra.',
               () => document.getElementById('view-normal').style.display = 'flex');
             return;
           }
@@ -1373,22 +1373,24 @@
             return;
           }
 
-          try {
-            const timestamp = Date.now();
-            const tileId    = Math.random().toString(36).slice(2, 10);
-            const payload   = `${entry.letter},${teamKey},${timestamp},${tileId}`;
-            const encoded   = btoa(payload);
-            const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
+          showConfirm(async () => {
+            try {
+              const timestamp = Date.now();
+              const tileId    = Math.random().toString(36).slice(2, 10);
+              const payload   = `${entry.letter},${teamKey},${timestamp},${tileId}`;
+              const encoded   = btoa(payload);
+              const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
 
-            localStorage.setItem('skratica_share_url', shareUrl);
-            renderQR(shareUrl, teamConf);
-            setMode('sharing');
-            document.getElementById('view-normal').style.display = 'flex';
-            showQRPanel(entry);
-          } catch (e) {
-            showError('Error al compartir', 'No se ha podido generar el código. Inténtalo de nuevo.',
-              () => document.getElementById('view-normal').style.display = 'flex');
-          }
+              localStorage.setItem('skratica_share_url', shareUrl);
+              renderQR(shareUrl, teamConf);
+              setMode('sharing');
+              document.getElementById('view-normal').style.display = 'flex';
+              showQRPanel(entry);
+            } catch (e) {
+              showError('Error al entregar', 'No se ha podido generar el código. Inténtalo de nuevo.',
+                () => document.getElementById('view-normal').style.display = 'flex');
+            }
+          });
         }).catch(() => {
           showError('Sin acceso a la cámara', 'No se ha podido acceder a la cámara. Comprueba los permisos.',
             () => document.getElementById('view-normal').style.display = 'flex');
@@ -1449,7 +1451,7 @@
         btnBack.classList.remove('visible');
         btnBack.removeEventListener('click', onBack);
 
-        // Marcar letra como compartida (bonus se pierde al compartir)
+        // Marcar letra como compartida (bonus se pierde al entregar)
         const shared = JSON.parse(localStorage.getItem('skratica_surplus_shared') || '[]');
         shared.push(entry.letter);
         localStorage.setItem('skratica_surplus_shared', JSON.stringify(shared));
@@ -1812,25 +1814,27 @@
                 () => document.getElementById('view-normal').style.display = 'flex');
               return;
             }
-            try {
-              const timestamp = Date.now();
-              const tileId    = Math.random().toString(36).slice(2, 10);
-              const payload   = `${myEntry.letter},${myTeamKey},${timestamp},${tileId}`;
-              const encoded   = btoa(payload);
-              const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
-              localStorage.setItem('skratica_share_url', shareUrl);
-              renderQR(shareUrl, teamConf);
-              setMode('sharing');
-              document.getElementById('view-normal').style.display = 'flex';
-              showQRPanel(myEntry);
-            } catch (e) {
-              showError('Error al compartir', 'No se ha podido generar el código. Inténtalo de nuevo.',
-                () => document.getElementById('view-normal').style.display = 'flex');
-            }
+            showConfirm(async () => {
+              try {
+                const timestamp = Date.now();
+                const tileId    = Math.random().toString(36).slice(2, 10);
+                const payload   = `${myEntry.letter},${myTeamKey},${timestamp},${tileId}`;
+                const encoded   = btoa(payload);
+                const shareUrl  = `${SHARE_BASE_URL}/?tile=${encoded}`;
+                localStorage.setItem('skratica_share_url', shareUrl);
+                renderQR(shareUrl, teamConf);
+                setMode('sharing');
+                document.getElementById('view-normal').style.display = 'flex';
+                showQRPanel(myEntry);
+              } catch (e) {
+                showError('Error al entregar', 'No se ha podido generar el código. Inténtalo de nuevo.',
+                  () => document.getElementById('view-normal').style.display = 'flex');
+              }
+            });
             return;
           }
           if (decodedType === 'captain') {
-            showError('Ya has empezado', 'Para compartir tu letra debes estar en la pantalla principal, antes de escanear letras de compañeros.',
+            showError('Ya has empezado', 'Para entregar tu letra debes estar en la pantalla principal, antes de capturar letras de compañeros.',
               () => {
                 if (currentMode === 'word') showWordView(teamConf, getWordLetters());
                 else if (currentMode === 'done') showDoneView(teamConf, getWordLetters(), myTeamKey);
@@ -2003,24 +2007,29 @@
               () => document.getElementById('view-normal').style.display = 'flex');
             return;
           }
-          try {
-            const timestamp = Date.now();
-            const tileId    = Math.random().toString(36).slice(2, 10);
-            const payload   = `${myEntry.letter},${myTeamKey},${timestamp},${tileId}`;
-            const shareEncoded = btoa(payload);
-            const shareUrl  = `${SHARE_BASE_URL}/?tile=${shareEncoded}`;
-            localStorage.setItem('skratica_share_url', shareUrl);
-            renderQR(shareUrl, teamConf);
-            setMode('sharing');
+          showConfirm(async () => {
+            try {
+              const timestamp = Date.now();
+              const tileId    = Math.random().toString(36).slice(2, 10);
+              const payload   = `${myEntry.letter},${myTeamKey},${timestamp},${tileId}`;
+              const shareEncoded = btoa(payload);
+              const shareUrl  = `${SHARE_BASE_URL}/?tile=${shareEncoded}`;
+              localStorage.setItem('skratica_share_url', shareUrl);
+              renderQR(shareUrl, teamConf);
+              setMode('sharing');
+              document.getElementById('view-normal').style.display = 'flex';
+              showQRPanel(myEntry);
+              document.getElementById('qr-panel').addEventListener('click', () => {
+                if (getMode() === 'sharing') return;
+                hideQRPanel();
+              });
+            } catch (e) {
+              showError('Error al entregar', 'No se ha podido generar el código. Inténtalo de nuevo.',
+                () => document.getElementById('view-normal').style.display = 'flex');
+            }
+          }, () => {
             document.getElementById('view-normal').style.display = 'flex';
-            showQRPanel(myEntry);
-          } catch (e) {
-            showError('Error al compartir', 'No se ha podido generar el código. Inténtalo de nuevo.',
-              () => document.getElementById('view-normal').style.display = 'flex');
-          }
-          document.getElementById('qr-panel').addEventListener('click', () => {
-            if (getMode() === 'sharing') return;
-            hideQRPanel();
+            initShareMode(myEntry, myTeamKey, teamConf);
           });
           return;
         }

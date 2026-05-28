@@ -18,24 +18,24 @@ El equipo elige a un capitán. Para activar el rol debe escanear un **código QR
 ### Jugador
 Cada jugador tiene su letra y debe elegir **una sola vez** entre dos caminos:
 
-- **Compartir** su letra con otro compañero para que forme una palabra. A partir de ahí actúa como observador y ya no puede recopilar más letras.
-- **Recopilar** letras de otros compañeros para formar una palabra válida y entregarla al capitán.
+- **Entregar** su letra a otro compañero para que forme una palabra. A partir de ahí actúa como observador y ya no puede capturar más letras.
+- **Capturar** letras de otros compañeros para formar una palabra válida y entregarla al capitán.
 
 ## Cómo se juega paso a paso
 
 1. **Elegir capitán** — Un miembro de cada equipo se ofrece como capitán, pulsa "Ser capitán" y escanea el **código QR especial** de su equipo (ver [Códigos de capitán](#códigos-de-capitan) al final del documento). No hay vuelta atrás.
 2. **Escanear al capitán** — El resto del equipo escanea el QR del capitán para empezar a jugar.
-3. **Compartir o recopilar** — Decides si cedes tu letra o acumulas letras de otros. Esta decisión es **irreversible** durante la ronda.
-   - **Compartir**: Toca tu ficha y **vuelve a escanear el QR del capitán** para generar un código con tu letra. Entrégaselo a un compañero para que la recoja. A partir de aquí actúas como observador.
-   - **Recopilar**: Pulsa "Escanear letra" para recoger las letras que te compartan tus compañeros.
-4. **Recopilar letras** — Escanea los QR de las letras que te compartan tus compañeros. Cada letra escaneada tiene un **30% de probabilidad** de recibir un **bonus aleatorio** (mayor cuanto más rápido se escanee):
+3. **Entregar o capturar** — Decides si cedes tu letra o acumulas letras de otros. Esta decisión es **irreversible** durante la ronda.
+   - **Entregar**: Pulsa **«Entregar mi letra»** y **escanea el QR del capitán**. Tras escanearlo aparecerá un diálogo de confirmación. Al confirmar, se genera un código QR con tu letra que puedes entregar a un compañero para que la capture. A partir de aquí actúas como observador.
+   - **Capturar**: Pulsa **«Capturar letra»** para recoger las letras que te entreguen tus compañeros.
+4. **Capturar letras** — Escanea los QR de las letras que te entreguen tus compañeros. Cada letra escaneada tiene un **30% de probabilidad** de recibir un **bonus aleatorio** (mayor cuanto más rápido se escanee):
    - **×2L / ×3L** — Duplica/triplica el valor de la letra.
    - **×2P / ×3P** — Duplica/triplica el valor total de la palabra.
    - Los bonus de letra se aplican **solo** en posición **impar** (×3) o **par** (×2). Los bonus de palabra igual.
 5. **Formar la palabra** — Puedes reordenar tus letras como quieras y no estás obligado a usarlas todas para formar una palabra.
 6. **Validar** — Si la palabra existe en el diccionario, se considera válida. Es igual de justo para todos.
 7. **Entregar al capitán** — La palabra validada muestra un QR para que el capitán lo escanee.
-8. **Compartir sobrantes** — Las letras que no usaste se pueden volver a compartir con otros jugadores que sigan recopilando. Si la letra tenía un bonus, **se pierde** al compartirla (la siguiente persona que la reciba podrá obtener un bonus nuevo).
+8. **Entregar las sobrantes** — Las letras que no usaste se pueden volver a entregar a otros jugadores que sigan capturando. Si la letra tenía un bonus, **se pierde** al entregarla (la siguiente persona que la reciba podrá obtener un bonus nuevo).
 9. **Finalizar la ronda** — El capitán puede finalizar la ronda cuando haya escaneado al menos una palabra. No puede hacerlo antes de **10 minutos** desde el inicio de la ronda (para evitar cierres accidentales).
 
 ## Puntuación final
@@ -49,13 +49,13 @@ El equipo con más puntos gana la ronda.
 
 ## Consejos
 
-- **Comparte solo si estás seguro** de que alguien necesita tu letra. No hay vuelta atrás.
-- **No recopiles sin un plan**. Asegúrate de poder formar una palabra antes de acumular letras.
-- **No acumules de más**. Recopila solo las que necesites; si sobran tras validar la palabra, puedes volver a compartirlas.
+- **Entrega solo si estás seguro** de que alguien necesita tu letra. No hay vuelta atrás.
+- **No captures sin un plan**. Asegúrate de poder formar una palabra antes de acumular letras.
+- **No acumules de más**. Captura solo las que necesites; si sobran tras validar la palabra, puedes volver a entregarlas.
 
 # Diagrama de flujo del juego
 
-[Share FlowChart](https://kroki.io/mermaid/svg/eNp1VcFum0AQvecr9tgc8gdVKoJJQuvgBIijClnRGibOVniXLOAqbfodPecDeqjyAZXKj3VmF_DaSblYwjtv3rz3Zrkr1df8nuuGpZMDhk-SenH6Lgtko7lmvGRfWlipxSE7OjpmXpKEZ1Hm1WIleS66F4kngDdKC_5-qY8LYPDQikqxR1YCIiwMpi0zCEngxf55dtLWOWecNW3NcrWuePcbtKrZCGAL7WlT6HuXqRdGt5PAD5NwFn3_-ycFrJUbAbqBmtqDZDmvRNM9yy3Shx8HBmsfgFCfku7XE0t8L7od_v4UfM4CJCeBs7x7KcRKMagryAUv-xHdHnW7S3gPylA_CfzZRTC8zry8ERvUdq0KNWIR9BFbgQRNqrCrmFWgayV5ufg__Ujtsh-ZQ0kIBf64DSqO4LCu4BtZi86uuF5Ydep2udK8umd-f968pWeXvRnoxgtTbFUR14qXfKl5zTa8FAUveN2rtGftYgSkapsFYn4ziycjbcN5hCSgR8bzdt2W2KiVjQszVhusi1kcYCSuWii4ZOvuubYDWyTMwFBGB7fWE5fXf5Gsp2EUJufZqUAHBOmFFLSSBd8ysEdM-ziYB940S4Bp2EBpLDQLwJy8EKPuZ8Q4-iByoSQ441gEA5bOUsJq1wijGlxB8tFNGT3mkHUjjHBfhxO0Etv5jWZsxSXf8j80GCCLPec_YhwKpXcFdm2n6E1IZZ9spaUbx6RmCmfPVSVKDIN56cpua426fbXQTzj0TnrnLZQbwGSCzYM2S_0qyq5or0gm514cZG8zJGla6aTSSROVGYDZSRLE8yDOLnmNk3CmljXoDUljlxQRjZDsHv0BvcaEFA6SM2nc64GT-rPpNPDTMelWIPbQAoE2YEnpBsOrmp116SvtTTKLrpPMxy3r01Vh3ilzuVgKQw_HWyqJqzfcyw4zU93HFfcGR4xB6QJMOAbP7NLdKY3pa-W4367mptbgzL1pOPFSysR0PMrsZbzpnulCwKDRbVSInBKPwVdOKob6cet68LcPmI2dBNOQ3DmzVyVGg1wtx-5u60e6nmkHWvuxck0yKDYx1_HllGTtMzN4UyuEk_2nhZoYY96-03qMnQDtrtnwdrxAD_4Br0hf8w)
+[Share FlowChart](https://kroki.io/mermaid/svg/Zmxvd2NoYXJ0IFRECiAgICBTVEFSVChbRW50cmFyIGFsIGp1ZWdvXSkgLS0-IEFTU0lHTltBc2lnbmFjacOzbiBhbGVhdG9yaWE8YnI-ZGUgZXF1aXBvIHkgbGV0cmFdCiAgICBBU1NJR04gLS0-IFNFQVJDSFtCdXNjYSBhIHR1cyBjb21wYcOxZXJvcyBkZSBlcXVpcG9dCiAgICBTRUFSQ0ggLS0-IENBUFRBSU5fREVDSVNJT057wr9UZSBjb252aWVydGVzPGJyPmVuIGNhcGl0w6FuIGRlIGVxdWlwbz99CgogICAgQ0FQVEFJTl9ERUNJU0lPTiAtLT58U8OtfCBTQ0FOX0NBUFRBSU5fS0VZW0VzY2FuZWEgY8OzZGlnbyBlc3BlY2lhbDxicj5kZSBjYXBpdMOhbiBkZSBzdSBlcXVpcG9dCiAgICBTQ0FOX0NBUFRBSU5fS0VZIC0tPiBCRUNPTUVfQ0FQVEFJTltBY3RpdmFyIG1vZG8gY2FwaXTDoW48YnI-LSBnZW5lcmEgdHUgUVIgcGVyc29uYWxdCiAgICBDQVBUQUlOX0RFQ0lTSU9OIC0tPnxOb3wgU0NBTl9DQVBUQUlOW0VzY2FuZWEgZWwgUVIgZGVsIGNhcGl0w6FuPGJyPnBhcmEgZW1wZXphciBhIGp1Z2FyXQoKICAgIHN1YmdyYXBoIENhcGl0w6FuCiAgICAgICAgQkVDT01FX0NBUFRBSU4gLS0-IFdBSVRbRXNwZXJhIHBhbGFicmFzIHZhbGlkYWRhczxicj5kZSB0dXMgY29tcGHDsWVyb3NdCiAgICAgICAgV0FJVCAtLT4gU0NBTl9XT1JEW0VzY2FuZWEgUVIgZGUgcGFsYWJyYXM8YnI-eSBhY3VtdWxhIHB1bnRvc10KICAgICAgICBTQ0FOX1dPUkQgLS0-IE1PUkV7wr9RdWVkYW4gbcOhczxicj5wYWxhYnJhcz99CiAgICAgICAgTU9SRSAtLT58U8OtfCBXQUlUCiAgICAgICAgTU9SRSAtLT58Tm98IEZJTklTSFtGaW5hbGl6YXIgbGEgcm9uZGFdCiAgICAgICAgRklOSVNIIC0tPiBSRVZFQUxbU2UgcmV2ZWxhIHR1IGxldHJhIGRlIGNhcGl0w6FuPGJyPsOXTiBhcGFyaWNpb25lc10KICAgICAgICBSRVZFQUwgLS0-IFRPVEFMW1N1bWEgdG90YWwgZGVsIGVxdWlwb10KICAgICAgICBUT1RBTCAtLT4gV0lOKFtFbCBlcXVpcG8gY29uIG3DoXM8YnI-cHVudG9zIGdhbmEgbGEgcm9uZGFdKQogICAgZW5kCgogICAgc3ViZ3JhcGggSnVnYWRvcgogICAgICAgIFNDQU5fQ0FQVEFJTiAtLT4gREVDSURFe8K_RW50cmVnYXMgdHUgbGV0cmE8YnI-byBjYXB0dXJhcyBsZXRyYXM_fQogICAgICAgIERFQ0lERSAtLT58RW50cmVnYXJ8IEJUTltQdWxzYSDCq0VudHJlZ2FyIG1pIGxldHJhwrtdCiAgICAgICAgQlROIC0tPiBSRVNDQU5fQ0FQVEFJTltFc2NhbmVhIGVsIFFSIGRlbCBjYXBpdMOhbl0KICAgICAgICBSRVNDQU5fQ0FQVEFJTiAtLT4gQ09ORklSTXvCv0NvbmZpcm1hcyBxdWU8YnI-ZW50cmVnYXMgdHUgbGV0cmE_fQogICAgICAgIENPTkZJUk0gLS0-fE5vfCBPQlNFUlZFUgogICAgICAgIENPTkZJUk0gLS0-fFPDrXwgU0hBUkVbU2UgZ2VuZXJhIGVsIFFSIGRlIHR1IGxldHJhPGJyPnBhcmEgY29tcGFydGlyIGNvbiB1biBjb21wYcOxZXJvXQogICAgICAgIFNIQVJFIC0tPiBPQlNFUlZFUltQYXNhcyBhIG9ic2VydmFkb3I8YnI-LSB0dSByb25kYSBoYSB0ZXJtaW5hZG9dCiAgICAgICAgREVDSURFIC0tPnxDYXB0dXJhcnwgQ09MTEVDVFtDYXB0dXJhIGxldHJhcyBxdWU8YnI-dGUgZW50cmVndWVuIG90cm9zXQogICAgICAgIENPTExFQ1QgLS0-IEJPTlVTW0NhZGEgbGV0cmEgcHVlZGUgcmVjaWJpcjxicj51biBib251cyBhbGVhdG9yaW9dCiAgICAgICAgQk9OVVMgLS0-IFJFT1JERVJbUmVvcmRlbmEgbGFzIGxldHJhczxicj55IGZvcm1hIHVuYSBwYWxhYnJhXQogICAgICAgIFJFT1JERVIgLS0-IFZBTElEQVRFe8K_TGEgcGFsYWJyYSBlczxicj52w6FsaWRhIGVuIGVsIGRpY2Npb25hcmlvP30KICAgICAgICBWQUxJREFURSAtLT58Tm98IFJFT1JERVIKICAgICAgICBWQUxJREFURSAtLT58U8OtfCBERUxJVkVSW0dlbmVyYSBRUiBjb24gbGEgcGFsYWJyYTxicj52w6FsaWRhIHkgc3UgcHVudHVhY2nDs25dCiAgICAgICAgREVMSVZFUiAtLT4gU1VSUExVU1tFbnRyZWdhIGxldHJhcyBzb2JyYW50ZXM8YnI-YSBvdHJvcyBjb21wYcOxZXJvc10KICAgICAgICBTVVJQTFVTIC0tPiBPQlNFUlZFUgogICAgZW5kCgogICAgT0JTRVJWRVIgLS0-IFdBSVQ)
 
 ```mermaid
 flowchart TD
@@ -79,17 +79,20 @@ flowchart TD
     end
 
     subgraph Jugador
-        SCAN_CAPTAIN --> DECIDE{¿Compartes tu letra<br>o recopilas letras?}
-        DECIDE -->|Compartir| RESCAN_CAPTAIN[Vuelve a escanear<br>el QR del capitán]
-        RESCAN_CAPTAIN --> SHARE[Compartes tu letra<br>con un compañero]
+        SCAN_CAPTAIN --> DECIDE{¿Entregas tu letra<br>o capturas letras?}
+        DECIDE -->|Entregar| BTN[Pulsa «Entregar mi letra»]
+        BTN --> RESCAN_CAPTAIN[Escanea el QR del capitán]
+        RESCAN_CAPTAIN --> CONFIRM{¿Confirmas que<br>entregas tu letra?}
+        CONFIRM -->|No| OBSERVER
+        CONFIRM -->|Sí| SHARE[Se genera el QR de tu letra<br>para entregar a un compañero]
         SHARE --> OBSERVER[Pasas a observador<br>- tu ronda ha terminado]
-        DECIDE -->|Recopilar| COLLECT[Escanea letras que<br>te compartan otros]
+        DECIDE -->|Capturar| COLLECT[Captura letras que<br>te entreguen otros]
         COLLECT --> BONUS[Cada letra puede recibir<br>un bonus aleatorio]
         BONUS --> REORDER[Reordena las letras<br>y forma una palabra]
         REORDER --> VALIDATE{¿La palabra es<br>válida en el diccionario?}
         VALIDATE -->|No| REORDER
         VALIDATE -->|Sí| DELIVER[Genera QR con la palabra<br>válida y su puntuación]
-        DELIVER --> SURPLUS[Comparte letras sobrantes<br>con otros compañeros]
+        DELIVER --> SURPLUS[Entrega letras sobrantes<br>a otros compañeros]
         SURPLUS --> OBSERVER
     end
 
